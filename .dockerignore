@@ -4,3 +4,5 @@ docker-compose.yml
 Doxyfile
 .idea
 .cache
+db
+newman
