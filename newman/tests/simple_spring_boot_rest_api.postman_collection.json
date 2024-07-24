@@ -17,9 +17,13 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.environment.set(\"token\", pm.response.json().token);"
+									"pm.test(`${pm.info.requestName} - Response body structure is valid`, function () {",
+									"    pm.expect(pm.response.json()).to.have.property('token'); // verifica se o response possui o elemento 'token'",
+									"    pm.environment.set(\"token\", pm.response.json().token); // salva o token",
+									"});"
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -90,6 +94,34 @@
 					"item": [
 						{
 							"name": "GetById",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(`${pm.info.requestName} - Response body structure is valid`, function () {",
+											"    const data = pm.response.json();",
+											"    pm.expect(data).to.have.property('id'); // valida a propriedade 'id' no json",
+											"    pm.expect(data).to.have.property('nome'); // valida a propriedade 'nome' no json ",
+											"    ",
+											"    const db = {",
+											"        // pega ultimo registro salvo",
+											"        id: pm.environment.get('db_id'),",
+											"        nome: pm.environment.get('db_nome')",
+											"    };",
+											"    pm.expect(db.id).to.be.a(\"number\"); // check se o campo 'id' esta realmente com um valor numerico",
+											"    pm.expect(db.nome).to.be.a(\"string\"); // check se o campo 'nome' esta realmente com um valor string",
+											"",
+											"    pm.expect(db.id).to.eql(data.id); // compara o id coletado com o salvo",
+											"    pm.expect(db.nome).to.eql(data.nome); // compara o nome coletado com o salvo",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
 							"request": {
 								"method": "GET",
 								"header": [],
@@ -105,7 +137,183 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": "{{idx}}"
+											"value": "{{db_id}}"
+										}
+									]
+								}
+							},
+							"response": [
+								{
+									"name": "OK",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "<API Key>",
+												"description": "Added as a part of security scheme: apikey"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/pessoa/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"pessoa",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "39987363",
+													"description": "(Required) id"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"id\": -82075899,\n  \"nome\": \"ullamco fugiat\"\n}"
+								},
+								{
+									"name": "Forbidden!",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "<API Key>",
+												"description": "Added as a part of security scheme: apikey"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/pessoa/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"pessoa",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "39987363",
+													"description": "(Required) id"
+												}
+											]
+										}
+									},
+									"status": "Forbidden",
+									"code": 403,
+									"_postman_previewlanguage": "text",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "text/plain"
+										}
+									],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "500 message",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "<API Key>",
+												"description": "Added as a part of security scheme: apikey"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/pessoa/:id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"pessoa",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "39987363",
+													"description": "(Required) id"
+												}
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"value\": \"reference #/components/schemas/Error not found in the OpenAPI spec\"\n}"
+								}
+							]
+						},
+						{
+							"name": "GetByIdAfterPut",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(`${pm.info.requestName} - Response body structure is valid`, function () {",
+											"    const data = pm.response.json();",
+											"    pm.expect(data).to.have.property('id'); // valida a propriedade 'id' no json",
+											"    pm.expect(data).to.have.property('nome'); // valida a propriedade 'nome' no json ",
+											"    ",
+											"    const db = {",
+											"        // pega ultimo registro salvo",
+											"        id: pm.environment.get('db_id'),",
+											"        nome: pm.environment.get('db_nome')",
+											"    };",
+											"    pm.expect(db.id).to.be.a(\"number\"); // check se o campo 'id' esta realmente com um valor numerico",
+											"    pm.expect(db.nome).to.be.a(\"string\"); // check se o campo 'nome' esta realmente com um valor string",
+											"",
+											"    pm.expect(db.id).to.eql(data.id); // compara o id coletado com o salvo",
+											"    pm.expect(db.nome).to.eql(data.nome); // compara o nome coletado com o salvo",
+											"});",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/pessoa/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"pessoa",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{db_id}}"
 										}
 									]
 								}
@@ -238,6 +446,25 @@
 						},
 						{
 							"name": "Put",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(`${pm.info.requestName} - Response body structure is valid`, function () {",
+											"    const data = pm.response.json();",
+											"    pm.expect(data).to.have.property('id'); // valida a existencia do campo 'id'",
+											"    pm.expect(data).to.have.property('nome'); // valida a existencia do campo 'nome'",
+											"",
+											"    pm.environment.set('db_id', data.id); // salva o campo 'id' registrado na api",
+											"    pm.environment.set('db_nome', data.nome); // salva o campo 'nome' registrado na api",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
 							"request": {
 								"method": "PUT",
 								"header": [
@@ -252,7 +479,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"id\": -82075899,\n  \"nome\": \"ullamco fugiat\"\n}",
+									"raw": "{\n  \"id\": {{db_id}},\n  \"nome\": \"{{$randomLastName}} {{$randomFirstName}}\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -271,7 +498,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": "{{idx}}",
+											"value": "{{db_id}}",
 											"description": "(Required) id"
 										}
 									]
@@ -334,6 +561,19 @@
 						},
 						{
 							"name": "Delete",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"['token','db_id','db_nome','id']",
+											"    .forEach(k=>pm.environment.unset(k)); // remove as variaveis temporarias"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
 							"request": {
 								"method": "DELETE",
 								"header": [
@@ -354,7 +594,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": "{{idx}}",
+											"value": "{{db_id}}",
 											"description": "(Required) id"
 										}
 									]
@@ -413,9 +653,17 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									""
+									"pm.test(`${pm.info.requestName} - Response body structure is valid`, function () {",
+									"    const data = pm.response.json();",
+									"    pm.expect(data).to.have.property('id'); // valida a existencia do campo 'id'",
+									"    pm.expect(data).to.have.property('nome'); // valida a existencia do campo 'nome'",
+									"",
+									"    pm.environment.set('db_id', data.id); // salva o campo 'id' registrado na api",
+									"    pm.environment.set('db_nome', data.nome); // salva o campo 'nome' registrado na api",
+									"});"
 								],
-								"type": "text/javascript"
+								"type": "text/javascript",
+								"packages": {}
 							}
 						}
 					],
@@ -433,7 +681,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"id\": 0,\n  \"nome\": \"Bruce Waine {{idx}}\"\n}",
+							"raw": "{\n  \"nome\": \"{{$randomFirstName}} {{$randomLastName}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -496,7 +744,22 @@
 					]
 				},
 				{
-					"name": "Retorna uma lista de pessoas",
+					"name": "GetAll",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(`${pm.info.requestName} - check response list size`, () => {",
+									"    pm.expect(pm.response.json().length).to.gte(0); // valida se o payload trouxe ao menos um registro",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [
@@ -656,10 +919,21 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					"if(pm.environment.get(\"token\")===null) {",
-					"    console.log(\"GoTo Login\")",
-					"    postman.setNextRequest(\"login\");",
-					"}"
+					"",
+					"const token = pm.environment.get(\"token\");       // token ",
+					"const workflow = pm.environment.get('workflow').split(','); // workflow",
+					"",
+					"let next = pm.info.requestName; // nome do request",
+					"let idx = workflow.indexOf(next); // id do request no workflow",
+					"",
+					"if(token) { // se existir token",
+					"    next = (idx>=0) ? workflow[idx+1] : null;  // pega nome do proximo request no workflow ",
+					"} else { // se nso existir token",
+					"    next = workflow[0]; // pega o primeiro request do workflow",
+					"}",
+					"",
+					"console.log((next)?`next: ${next}`:'end tests'); // loga o proximo request na console",
+					"pm.execution.setNextRequest(next); // seta o proximo request"
 				]
 			}
 		},
@@ -668,9 +942,10 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					"pm.test(pm.request.url.path.join(\"/\"), () => {",
-					"    pm.response.to.have.status(200);",
+					"pm.test(`${pm.info.requestName} - OK` , () => {",
+					"    pm.response.to.have.status(200); // realiza a valisacao do status OK paracada um dos requests",
 					"});",
+					"",
 					""
 				]
 			}
