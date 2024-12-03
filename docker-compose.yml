@@ -1,9 +1,4 @@
-version: '3.8'
-
-# create network to application stack infrastructure
-networks:
-  jnet:
-    driver: bridge
+#version: '3.8'
 
 services:
 
@@ -27,8 +22,6 @@ services:
     restart: always
     # ports:
     #   - 3306:3306
-    networks:
-      - jnet
 
   # application
   app:
@@ -41,8 +34,6 @@ services:
       mysql:
         condition: service_healthy
     restart: always
-    networks:
-      - jnet
 
   # phpadmin - you need read database :)
   phpadmin:
@@ -59,8 +50,6 @@ services:
       mysql:
         condition: service_healthy
     restart: always
-    networks:
-      - jnet
 
   newman:
     image: postman/newman:alpine
@@ -69,18 +58,17 @@ services:
       - ./newman/tests:/etc/newman
     entrypoint:
       - /bin/sh 
-      - -xvc
+      - -c
       - | 
-        npm instal --global newman-reporter-html; 
+        sleep 30;
+        npm instal --silent --global newman-reporter-htmlextra; 
         newman run \
           --iteration-count 10 \
           --environment test-docker.postman_environment.json \
           simple_spring_boot_rest_api.postman_collection.json \
-          --reporters html;
+          --reporters htmlextra;
     depends_on:
       - app
-    networks:
-      - jnet
 
 secrets:
   db-password:
