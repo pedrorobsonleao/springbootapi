@@ -17,6 +17,7 @@ RUN apk add --no-cache binutils; \
     --no-man-pages \
     --strip-debug \
     --output /minimal-jre; \
+    sed -i 's/\r$//' mvnw; \
     ./mvnw clean install -D maven.test.skip=true
 
 # origin image to runtime application image
