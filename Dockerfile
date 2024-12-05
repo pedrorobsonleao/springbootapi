@@ -41,7 +41,17 @@ ARG APP_DIR=/app
 RUN addgroup --gid ${GROUP_ID} ${GROUP_NAME} && \
     adduser --no-create-home --disabled-password --ingroup ${GROUP_NAME} --uid ${USER_ID} ${USER_NAME} && \
     mkdir ${APP_DIR} && \
-    chown -R ${USER_NAME}:${GROUP_NAME} ${APP_DIR}
+    chown -R ${USER_NAME}:${GROUP_NAME} ${APP_DIR} && \
+    echo 'echo "Java Opts=${JAVA_OPTS}" && \
+      java ${JAVA_OPTS} \
+      --add-opens java.base/java.time=ALL-UNNAMED \
+      -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:6000 -Duser.timezone=UTC \
+      -DjsonLogsEnabled=true \
+      -Djava.security.egd=file:/dev/./urandom \
+      -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE} \
+      -XshowSettings:vm \
+      -XX:MaxRAMPercentage=90 \
+      -jar application.jar' >  ${APP_DIR}/entrypoint.sh
 
 # crate app workdir to runtime application
 WORKDIR ${APP_DIR}
@@ -50,11 +60,15 @@ WORKDIR ${APP_DIR}
 COPY --from=builder /minimal-jre $JAVA_HOME
 
 # copy build jar file from build image
-COPY --from=builder app/target/${APP} .
+COPY --from=builder app/target/${APP} application.jar
 
 # expose http access application port
 EXPOSE 8080
 
 # run application when run container
 USER ${USER_NAME}:${GROUP_NAME}
-ENTRYPOINT ["java","-jar", "springbootapi-0.0.1-SNAPSHOT.jar"]
+
+ENV JSON_LOGS_ENABLED=true
+ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+
+ENTRYPOINT ["sh", "entrypoint.sh"]
