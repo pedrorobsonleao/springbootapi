@@ -1,10 +1,10 @@
 # Springboot Api
 
-This sample is based in [wladimilson/springbootapi](https://github.com/wladimilson/springbootapi) write from [Wladimilson M. Nascimento](https://www.treinaweb.com.br/blog/autor/wladimilson-m-nascimento)
+This repositoy is a for of [wladimilson/springbootapi](https://github.com/wladimilson/springbootapi) written by [Wladimilson M. Nascimento](https://www.treinaweb.com.br/blog/autor/wladimilson-m-nascimento)
 
-I included in project the files [Dockerfile](Dockerfile) and [docker-compose](docker-compose.yml) and show in this document how to build java application and deploy the infrastructure.
+It includes the [Dockerfile](Dockerfile) and [docker-compose](docker-compose.yml) files, and this document that show how to build and deploy a java application.
 
-Please read the comments in the files [Dockerfile](Dockerfile) and [docker-compose](docker-compose.yml) to more informations. 
+Please read the comments in the files [Dockerfile](Dockerfile) and [docker-compose](docker-compose.yml) for more informations. 
 
 ---
 
