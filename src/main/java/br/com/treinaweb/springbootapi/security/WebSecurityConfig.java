@@ -1,41 +1,70 @@
 package br.com.treinaweb.springbootapi.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+//import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+//import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
-public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfig {
 
-	@Override
-	protected void configure(HttpSecurity httpSecurity) throws Exception {
-		httpSecurity.csrf().disable().authorizeRequests()
-			.antMatchers(HttpMethod.GET, "/").permitAll()
-			.antMatchers(HttpMethod.GET, "/v2/api-docs").permitAll()
-			.antMatchers(HttpMethod.GET, "/swagger-ui.html").permitAll()
-			.antMatchers(HttpMethod.GET, "/webjars/**").permitAll()
-			.antMatchers(HttpMethod.GET, "/swagger-resources/**").permitAll()
-			.antMatchers(HttpMethod.POST, "/login").permitAll()
-			.anyRequest().authenticated()
-			.and()
-			
-			.addFilterBefore(new JWTLoginFilter("/login", authenticationManager()),
-	                UsernamePasswordAuthenticationFilter.class)
-			
-			.addFilterBefore(new JWTAuthenticationFilter(),
-	                UsernamePasswordAuthenticationFilter.class);
+	@Autowired
+	private AuthenticationManager authenticationManager;
+
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		customizeRequestMatchers(http);
+
+		JWTLoginFilter jwtLoginFilter = new JWTLoginFilter("/login", authenticationManager);
+		JWTAuthenticationFilter jwtAuthenticationFilter = new JWTAuthenticationFilter();
+
+		http.addFilterBefore(jwtLoginFilter, UsernamePasswordAuthenticationFilter.class)
+				.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+		return http.build();
 	}
-	
-	@Override
-	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+
+	private void customizeRequestMatchers(HttpSecurity http) throws Exception {
+		http.csrf().disable()
+				.authorizeHttpRequests((requests) -> requests
+						.requestMatchers(HttpMethod.GET, "/").permitAll()
+						.requestMatchers(HttpMethod.GET, "/v2/api-docs").permitAll()
+						.requestMatchers(HttpMethod.GET, "/swagger-ui.html").permitAll()
+						.requestMatchers(HttpMethod.GET, "/webjars/**").permitAll()
+						.requestMatchers(HttpMethod.GET, "/swagger-resources/**").permitAll()
+						.requestMatchers(HttpMethod.POST, "/login").permitAll()
+						.anyRequest().authenticated());
+	}
+
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
+
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+			throws Exception {
+		return authenticationConfiguration.getAuthenticationManager();
+	}
+
+	@Bean
+	public AuthenticationManager customAuthenticationManager(AuthenticationManagerBuilder auth) throws Exception {
 		auth.inMemoryAuthentication()
-			.withUser("admin")
-			.password("{noop}password")
-			.roles("ADMIN");
+				.withUser("admin")
+				.password(passwordEncoder().encode("password"))
+				.roles("ADMIN");
+		return auth.build();
 	}
 }

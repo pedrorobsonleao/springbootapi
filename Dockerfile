@@ -1,5 +1,5 @@
 # origin image to build application
-FROM eclipse-temurin:11.0.25_9-jdk-alpine AS builder
+FROM eclipse-temurin:23.0.1_11-jdk-alpine AS builder
 
 # copy source to docker build environment
 COPY . /app
@@ -38,6 +38,7 @@ ARG GROUP_NAME="apps"
 ARG GROUP_ID="1000"
 # Configure work directory.
 ARG APP_DIR=/app
+ARG SPRING_PROFILES_ACTIVE=local
 
 RUN addgroup --gid ${GROUP_ID} ${GROUP_NAME} && \
     adduser --no-create-home --disabled-password --ingroup ${GROUP_NAME} --uid ${USER_ID} ${USER_NAME} && \
