@@ -1,22 +1,21 @@
 package br.com.treinaweb.springbootapi.entity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
-import io.swagger.annotations.ApiModelProperty;
-
 @Entity
 public class Pessoa
 {
-    @ApiModelProperty(value = "Código da pessoa")
+    @Schema(description = "Código da pessoa")
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
 
-    @ApiModelProperty(value = "Nome da pessoa")
+    @Schema(description = "Nome da pessoa")
     @Column(nullable = false)
     private String nome;
 
