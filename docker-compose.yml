@@ -1,29 +1,27 @@
-version: "3.8"
-
-# create network to application stack infrastructure
-networks:
-  java_net:
-    driver: bridge
+#version: '3.8'
 
 services:
-  # create database to application
+
+  # database aplication
   mysql:
-    image: mysql:5
-    container_name: mysql
+    image: mariadb:latest
+    command: '--default-authentication-plugin=mysql_native_password'
+    #restart: always
+    healthcheck:
+      test: ['CMD-SHELL', 'mariadb-admin ping -h 127.0.0.1 --password="$$(cat /run/secrets/db-password)" --silent']
+      interval: 3s
+      retries: 5
+      start_period: 30s
+    secrets:
+      - db-password
     environment:
-      - MYSQL_ROOT_PASSWORD=rootpwd
-      - MYSQL_DATABASE=treinaweb
-      - MYSQL_USER=treinawebusr
-      - MYSQL_PASSWORD=treinawebpwd
-## the ports is closed to extern access
-## only application have database access
-#    ports:
-#      - "3306:3306"
-#    volumes:
-#      - "./mysql:/var/lib/mysql"
+      - MARIADB_USER=treinawebusr
+      - MARIADB_PASSWORD=treinawebpwd
+      - MARIADB_DATABASE=treinaweb
+      - MARIADB_ROOT_PASSWORD_FILE=/run/secrets/db-password
     restart: always
-    networks:
-      - java_net
+    ports:
+      - 3306:3306
 
   # application
   app:
@@ -32,9 +30,12 @@ services:
     container_name: "java_app"
     ports:
       - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      mysql:
+        condition: service_healthy
     restart: always
-    networks:
-      - java_net
 
   # phpadmin - you need read database :)
   phpadmin:
@@ -44,6 +45,33 @@ services:
       - "9090:80"
     environment:
       - PMA_ARBITRARY=1
+      - PMA_HOST=mysql
+      - PMA_USER=treinawebusr
+      - PMA_PASSWORD=treinawebpwd
+    depends_on:
+      mysql:
+        condition: service_healthy
     restart: always
-    networks:
-      - java_net
+
+  newman:
+    image: postman/newman:alpine
+    container_name: api_tests
+    volumes:
+      - ./newman/tests:/etc/newman
+    entrypoint:
+      - /bin/sh 
+      - -c
+      - | 
+        sleep 30;
+        npm instal --silent --global newman-reporter-htmlextra; 
+        newman run \
+          --iteration-count 10 \
+          --environment test-docker.postman_environment.json \
+          simple_spring_boot_rest_api.postman_collection.json \
+          --reporters htmlextra;
+    depends_on:
+      - app
+
+secrets:
+  db-password:
+    file: db/pwd.txt

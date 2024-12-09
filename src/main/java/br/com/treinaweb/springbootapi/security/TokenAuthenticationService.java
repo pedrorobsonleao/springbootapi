@@ -1,59 +1,45 @@
 package br.com.treinaweb.springbootapi.security;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Date;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.stereotype.Service;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-
+@Service
 public class TokenAuthenticationService {
-	
-	// EXPIRATION_TIME = 10 dias
-	static final long EXPIRATION_TIME = 860_000_000;
-	static final String SECRET = "MySecret";
-	static final String TOKEN_PREFIX = "Bearer";
-	static final String HEADER_STRING = "Authorization";
-	
-	static void addAuthentication(HttpServletResponse response, String username) {
-		String JWT = Jwts.builder()
-				.setSubject(username)
-				.setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-				.signWith(SignatureAlgorithm.HS512, SECRET)
-                .compact();
-        
-        response.addHeader("Content-Type", "application/json");
-        
-        try {
-            response.getWriter().write(String.format("{ \"token\": \"%s\" }", JWT));
-            response.getWriter().flush();
-            response.getWriter().close();
-        } catch (IOException e) {
-            e.printStackTrace();
-		}
-	}
-	
-	static Authentication getAuthentication(HttpServletRequest request) {
-		String token = request.getHeader(HEADER_STRING);
-		
-		if (token != null) {
-			String user = Jwts.parser()
-					.setSigningKey(SECRET)
-					.parseClaimsJws(token.replace(TOKEN_PREFIX, ""))
-					.getBody()
-					.getSubject();
-			
-			if (user != null) {
-				return new UsernamePasswordAuthenticationToken(user, null, Collections.emptyList());
-			}
-		}
-		return null;
-	}
-	
+
+    static final long EXPIRATION_HOURS = 10;
+
+    private final JwtEncoder jwtEncoder;
+
+
+    public TokenAuthenticationService(JwtEncoder jwtEncoder) {
+        this.jwtEncoder = jwtEncoder;
+    }
+
+    public String generateToken(Authentication authentication) {
+        Instant now = Instant.now();
+
+        String scope = authentication.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(" "));
+
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer("self")
+                .issuedAt(now)
+                .expiresAt(now.plus(EXPIRATION_HOURS, ChronoUnit.HOURS))
+                .subject(authentication.getName())
+                .claim("scope", scope)
+                .build();
+
+        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+    }
+
 }

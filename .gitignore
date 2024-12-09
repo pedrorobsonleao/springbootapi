@@ -1,6 +1,5 @@
 HELP.md
 target/
-.mvn/
 !**/src/main/**
 !**/src/test/**
 
@@ -31,8 +30,8 @@ build/
 
 ### VS Code ###
 .vscode/
-mvnw
-mvnw.cmd
 
 ## MAC OS X
 **/.DS_Store
+
+**/*.html
