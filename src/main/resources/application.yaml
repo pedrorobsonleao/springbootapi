@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/treinaweb?useSSL=false
+    username: treinawebusr
+    password: treinawebpwd
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MariaDBDialect
+    hibernate:
+      ddl-auto: update
+
+rsa:
+  privateKey: classpath:certs/private-key.pem
+  publicKey: classpath:certs/public-key.pem
