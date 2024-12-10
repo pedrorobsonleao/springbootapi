@@ -19,6 +19,8 @@ services:
       - MARIADB_PASSWORD=treinawebpwd
       - MARIADB_DATABASE=treinaweb
       - MARIADB_ROOT_PASSWORD_FILE=/run/secrets/db-password
+    volumes:
+      - ./db/pwd.txt:/run/secrets/db-password # insert secret with volume to work in wsl-2
     restart: always
     ports:
       - 3306:3306
