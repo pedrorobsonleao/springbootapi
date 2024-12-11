@@ -1,5 +1,17 @@
 # Springboot Api
 
+## indice
+* [build and run](#build-and-run)
+    * [run application](#run-application)
+        * [newman test](#newman-test)
+        * [postman test](#postman-test)
+* [local build](#local-build)
+    * [run tests](#run-tests)
+        * [jacoco report](#jacoco-report)
+* [swagger](#swagger)
+* [team](#team)
+
+---
 This repositoy is a for of [wladimilson/springbootapi] written by [Wladimilson M. Nascimento].
 
 It includes the [Dockerfile] and [docker-compose] files, and this document that show how to build and deploy a java application.
@@ -77,7 +89,7 @@ To run te scripts locally, install and import the scripts in your local [Postman
 
 For more know how about the tests scripts, read the document [Test APIs and write scripts in Postman].
 
-### local build
+## local build
 
 * `sdk env install` -  use [sdkman] to set java version to build.
 * `./mvnw clean install` - built the project 
@@ -98,9 +110,18 @@ After a [local build] or [run tests] the  [jacoco] Reports is white  in [target/
 #### jacoco report
 ![jacoco-report]
 
-### swagger
+## swagger
 
-* http://localhost:8080/swagger-ui/index.html
+Use the `/login` to get the `Baerer  Token` and enjoi!
+
+|user |password |
+|-----|---------|
+|admin|password |
+
+![swagger]
+
+ http://localhost:8080/swagger-ui/index.html
+
 <!--
 ## access application
 * http://localhost:8080/swagger-ui/index.html
@@ -128,8 +149,9 @@ $ curl -X PUT "http://localhost:8080/pessoa/1" -H "accept: application/json" -H 
 ```
 -->
 
+## team
 * [Pedro Robson Leão]
-* [Diego Schmidt]🙏🏼
+* [Diego Schmidt]🙏🏼 (Congrats)
 
 [sdkman]:https://sdkman.io/
 [Pedro Robson Leão]:mailto:pedro.leao@gmail.com
@@ -153,3 +175,4 @@ $ curl -X PUT "http://localhost:8080/pessoa/1" -H "accept: application/json" -H 
 [jacoco-report]:./img/jacoco-report.png
 [newman-report]:./img/newman-report.png
 [postman-report]:./img/postman-report.png
+[swagger]:./img/swagger.png
