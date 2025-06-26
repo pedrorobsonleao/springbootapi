@@ -6,16 +6,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 class PessoaControllerTest {
 
@@ -27,7 +26,7 @@ class PessoaControllerTest {
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        openMocks(this);
     }
 
     @Test
@@ -35,10 +34,10 @@ class PessoaControllerTest {
         Pessoa pessoa = new Pessoa();
         pessoa.setId(1L);
         pessoa.setNome("Teste");
-        when(pessoaRepository.findAll()).thenReturn(Arrays.asList(pessoa));
+        when(pessoaRepository.findAll()).thenReturn(List.of(pessoa));
         List<Pessoa> pessoas = pessoaController.Get();
         assertEquals(1, pessoas.size());
-        assertEquals("Teste", pessoas.get(0).getNome());
+        assertEquals("Teste", pessoas.getFirst().getNome());
     }
 
     @Test
@@ -49,6 +48,7 @@ class PessoaControllerTest {
         when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoa));
         ResponseEntity<Pessoa> response = pessoaController.GetById(1L);
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
         assertEquals("Teste", response.getBody().getNome());
     }
 
@@ -79,6 +79,7 @@ class PessoaControllerTest {
         when(pessoaRepository.save(any(Pessoa.class))).thenReturn(oldPessoa);
         ResponseEntity<Pessoa> response = pessoaController.Put(1L, newPessoa);
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
         assertEquals("New", response.getBody().getNome());
     }
 
@@ -108,4 +109,3 @@ class PessoaControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 }
-
