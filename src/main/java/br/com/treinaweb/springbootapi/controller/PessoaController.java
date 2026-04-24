@@ -12,10 +12,12 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -45,7 +47,7 @@ public class PessoaController {
             @ApiResponse(responseCode = "403", description = "Você não tem permissão para acessar este recurso"),
             @ApiResponse(responseCode = "500", description = "Foi gerada uma exceção"),
     })
-    @RequestMapping(value = "/pessoa", method = RequestMethod.GET, produces = "application/json")
+    @GetMapping(value = "/pessoa", produces = "application/json")
     public List<Pessoa> Get() {
         return pessoaRepository.findAll();
     }
@@ -61,13 +63,11 @@ public class PessoaController {
             @ApiResponse(responseCode = "403", description = "Você não tem permissão para acessar este recurso"),
             @ApiResponse(responseCode = "500", description = "Foi gerada uma exceção"),
     })
-    @RequestMapping(value = "/pessoa/{id}", method = RequestMethod.GET, produces = "application/json")
+    @GetMapping(value = "/pessoa/{id}", produces = "application/json")
     public ResponseEntity<Pessoa> GetById(@PathVariable(value = "id") long id) {
-        Optional<Pessoa> pessoa = pessoaRepository.findById(id);
-        if (pessoa.isPresent())
-            return new ResponseEntity<Pessoa>(pessoa.get(), HttpStatus.OK);
-        else
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return pessoaRepository.findById(id)
+                .map(pessoa -> new ResponseEntity<>(pessoa, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     /**
@@ -81,7 +81,7 @@ public class PessoaController {
         @ApiResponse(responseCode = "404", description = "Registro não localizado"),
         @ApiResponse(responseCode = "500", description = "Foi gerada uma exceção"),
     })
-    @RequestMapping(value = "/pessoa", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    @PostMapping(value = "/pessoa", produces = "application/json", consumes = "application/json")
     public Pessoa Post(@Valid @RequestBody Pessoa pessoa) {
         return pessoaRepository.save(pessoa);
     }
@@ -98,16 +98,14 @@ public class PessoaController {
         @ApiResponse(responseCode = "404", description = "Registro não localizado"),
         @ApiResponse(responseCode = "500", description = "Foi gerada uma exceção"),
     })
-    @RequestMapping(value = "/pessoa/{id}", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
+    @PutMapping(value = "/pessoa/{id}", produces = "application/json", consumes = "application/json")
     public ResponseEntity<Pessoa> Put(@PathVariable(value = "id") long id, @Valid @RequestBody Pessoa newPessoa) {
-        Optional<Pessoa> oldPessoa = pessoaRepository.findById(id);
-        if (oldPessoa.isPresent()) {
-            Pessoa pessoa = oldPessoa.get();
-            pessoa.setNome(newPessoa.getNome());
-            pessoaRepository.save(pessoa);
-            return new ResponseEntity<Pessoa>(pessoa, HttpStatus.OK);
-        } else
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return pessoaRepository.findById(id)
+                .map(pessoa -> {
+                    pessoa.setNome(newPessoa.getNome());
+                    return new ResponseEntity<>(pessoaRepository.save(pessoa), HttpStatus.OK);
+                })
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     /**
@@ -121,13 +119,13 @@ public class PessoaController {
             @ApiResponse(responseCode = "404", description = "Registro não localizado"),
             @ApiResponse(responseCode = "500", description = "Foi gerada uma exceção"),
     })
-    @RequestMapping(value = "/pessoa/{id}", method = RequestMethod.DELETE, produces = "application/json")
+    @DeleteMapping(value = "/pessoa/{id}", produces = "application/json")
     public ResponseEntity<Object> Delete(@PathVariable(value = "id") long id) {
-        Optional<Pessoa> pessoa = pessoaRepository.findById(id);
-        if (pessoa.isPresent()) {
-            pessoaRepository.delete(pessoa.get());
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return pessoaRepository.findById(id)
+                .map(pessoa -> {
+                    pessoaRepository.delete(pessoa);
+                    return new ResponseEntity<>(HttpStatus.OK);
+                })
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 }
