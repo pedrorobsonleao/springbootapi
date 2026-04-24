@@ -6,4 +6,3 @@ Analisar o codigo java como um especialista
 
 - crie um CHANGELOG.md das mudancas realizadas 
 
-- realize o commit das mudancas com um comentario eficiente e significatibo
