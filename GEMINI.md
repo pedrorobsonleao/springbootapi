@@ -1,8 +1,6 @@
 Analisar o codigo java como um especialista
 
-- identificar pontos de mudanca para conversao do codigo java de springboot 4.0.0 para springboot 4.0.5
+- realizar a migraçao de java 23.0.2 para 25.0.3
+- analise o codigo de forma a identificar pontos de melhoria e performance disponiveis na versao mais nova da JVM
 
-- avaliar e aplicar otimizacoes da versao para melhorar performance, seguranca e resiliencia
-
-- crie um CHANGELOG.md das mudancas realizadas 
-
+- analise o arquivo Dockerfile e realize as correcoes necessarias para que o build com `docker compose up --build`  seja executado sem erros

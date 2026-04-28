@@ -1,5 +1,5 @@
 # origin image to build application
-FROM eclipse-temurin:23.0.1_11-jdk-alpine AS builder
+FROM eclipse-temurin:25-jdk AS builder
 
 # copy source to docker build environment
 COPY . /app
@@ -8,20 +8,19 @@ COPY . /app
 WORKDIR /app
 
 # run commands
-RUN apk add --no-cache binutils; \
-    jlink \
+RUN jlink \
     --verbose \
-    --add-modules ALL-MODULE-PATH \
+    --add-modules java.base,java.compiler,java.desktop,java.instrument,java.management,java.naming,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,jdk.jcmd,jdk.jdwp.agent,jdk.unsupported \
     --compress=2 \
     --no-header-files \
     --no-man-pages \
     --strip-debug \
     --output /minimal-jre; \
     sed -i 's/\r$//' mvnw; \
-    ./mvnw clean install -D maven.test.skip=true
+    ./mvnw clean package -DskipTests
 
 # origin image to runtime application image
-FROM alpine:latest AS runtime
+FROM ubuntu:24.04 AS runtime
 
 # maintainer name
 LABEL authors="Pedro Robson Leão <pedro.leao@gmail.com>"
@@ -33,15 +32,15 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # Add app user.
 ARG USER_NAME="appuser"
-ARG USER_ID="1000"
+ARG USER_ID="1001"
 ARG GROUP_NAME="apps"
-ARG GROUP_ID="1000"
+ARG GROUP_ID="1001"
 # Configure work directory.
 ARG APP_DIR=/app
 ARG SPRING_PROFILES_ACTIVE=local
 
-RUN addgroup --gid ${GROUP_ID} ${GROUP_NAME} && \
-    adduser --no-create-home --disabled-password --ingroup ${GROUP_NAME} --uid ${USER_ID} ${USER_NAME} && \
+RUN groupadd --gid ${GROUP_ID} ${GROUP_NAME} && \
+    useradd --no-create-home --gid ${GROUP_ID} --uid ${USER_ID} ${USER_NAME} && \
     mkdir ${APP_DIR} && \
     chown -R ${USER_NAME}:${GROUP_NAME} ${APP_DIR} && \
     echo 'echo "Java Opts=${JAVA_OPTS}" && \
