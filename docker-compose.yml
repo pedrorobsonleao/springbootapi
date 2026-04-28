@@ -65,7 +65,7 @@ services:
       - -c
       - | 
         sleep 30;
-        npm instal --silent --global newman-reporter-htmlextra; 
+        npm install --silent --global newman-reporter-htmlextra; 
         newman run \
           --iteration-count 10 \
           --environment test-docker.postman_environment.json \

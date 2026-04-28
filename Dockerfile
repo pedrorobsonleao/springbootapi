@@ -1,25 +1,29 @@
-# origin image to build application
-FROM eclipse-temurin:25-jdk AS builder
-
-# copy source to docker build environment
-COPY . /app
-
-# create app dir to build application
+# 1. Base stage: setup environment and source code
+FROM eclipse-temurin:25-jdk AS base
 WORKDIR /app
+COPY . /app
+RUN sed -i 's/\r$//' mvnw
 
-# run commands
+# 2. Test stage: runs unit tests and generates JaCoCo coverage report
+# Use `docker build --target test .` to run just the tests
+FROM base AS test
+RUN ./mvnw test jacoco:report
+
+# 3. Builder stage: creates minimal JRE and packages the application
+FROM base AS builder
+# Added jdk.crypto.ec for JWT/RSA support
+# Fixed --compress to use 'zip' (JDK 21+)
 RUN jlink \
     --verbose \
-    --add-modules java.base,java.compiler,java.desktop,java.instrument,java.management,java.naming,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,jdk.jcmd,jdk.jdwp.agent,jdk.unsupported \
-    --compress=2 \
+    --add-modules java.base,java.compiler,java.instrument,java.management,java.naming,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,jdk.jcmd,jdk.jdwp.agent,jdk.unsupported,jdk.crypto.ec,jdk.management.agent \
+    --compress zip:6 \
     --no-header-files \
     --no-man-pages \
     --strip-debug \
-    --output /minimal-jre; \
-    sed -i 's/\r$//' mvnw; \
-    ./mvnw clean package -DskipTests
+    --output /minimal-jre
+RUN ./mvnw clean package -DskipTests
 
-# origin image to runtime application image
+# 4. Runtime stage: final lightweight application image
 FROM ubuntu:24.04 AS runtime
 
 # maintainer name
@@ -42,17 +46,21 @@ ARG SPRING_PROFILES_ACTIVE=local
 RUN groupadd --gid ${GROUP_ID} ${GROUP_NAME} && \
     useradd --no-create-home --gid ${GROUP_ID} --uid ${USER_ID} ${USER_NAME} && \
     mkdir ${APP_DIR} && \
-    chown -R ${USER_NAME}:${GROUP_NAME} ${APP_DIR} && \
-    echo 'echo "Java Opts=${JAVA_OPTS}" && \
-      java ${JAVA_OPTS} \
-      --add-opens java.base/java.time=ALL-UNNAMED \
-      -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=localhost:6000 -Duser.timezone=UTC \
-      -DjsonLogsEnabled=true \
-      -Djava.security.egd=file:/dev/./urandom \
-      -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE} \
-      -XshowSettings:vm \
-      -XX:MaxRAMPercentage=90 \
-      -jar application.jar' >  ${APP_DIR}/entrypoint.sh
+    chown -R ${USER_NAME}:${GROUP_NAME} ${APP_DIR}
+
+# Create entrypoint script properly
+RUN echo '#!/bin/sh\n\
+echo "Java Opts=${JAVA_OPTS}"\n\
+exec java ${JAVA_OPTS} \\\n\
+  --add-opens java.base/java.time=ALL-UNNAMED \\\n\
+  -Duser.timezone=UTC \\\n\
+  -DjsonLogsEnabled=true \\\n\
+  -Djava.security.egd=file:/dev/./urandom \\\n\
+  -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE} \\\n\
+  -XshowSettings:vm \\\n\
+  -XX:MaxRAMPercentage=90 \\\n\
+  -jar application.jar' > ${APP_DIR}/entrypoint.sh && \
+    chmod +x ${APP_DIR}/entrypoint.sh
 
 # crate app workdir to runtime application
 WORKDIR ${APP_DIR}
@@ -72,4 +80,4 @@ USER ${USER_NAME}:${GROUP_NAME}
 ENV JSON_LOGS_ENABLED=true
 ENV SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
 
-ENTRYPOINT ["sh", "entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]

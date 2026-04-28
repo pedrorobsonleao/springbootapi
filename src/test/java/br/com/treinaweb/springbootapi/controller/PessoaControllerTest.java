@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.SequencedCollection;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,7 +36,7 @@ class PessoaControllerTest {
         pessoa.setId(1L);
         pessoa.setNome("Teste");
         when(pessoaRepository.findAll()).thenReturn(List.of(pessoa));
-        List<Pessoa> pessoas = pessoaController.Get();
+        SequencedCollection<Pessoa> pessoas = pessoaController.getAll();
         assertEquals(1, pessoas.size());
         assertEquals("Teste", pessoas.getFirst().getNome());
     }
@@ -46,7 +47,7 @@ class PessoaControllerTest {
         pessoa.setId(1L);
         pessoa.setNome("Teste");
         when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoa));
-        ResponseEntity<Pessoa> response = pessoaController.GetById(1L);
+        ResponseEntity<Pessoa> response = pessoaController.getById(1L);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("Teste", response.getBody().getNome());
@@ -55,7 +56,7 @@ class PessoaControllerTest {
     @Test
     void testGetByIdNotFound() {
         when(pessoaRepository.findById(1L)).thenReturn(Optional.empty());
-        ResponseEntity<Pessoa> response = pessoaController.GetById(1L);
+        ResponseEntity<Pessoa> response = pessoaController.getById(1L);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
@@ -64,7 +65,7 @@ class PessoaControllerTest {
         Pessoa pessoa = new Pessoa();
         pessoa.setNome("Teste");
         when(pessoaRepository.save(any(Pessoa.class))).thenReturn(pessoa);
-        Pessoa result = pessoaController.Post(pessoa);
+        Pessoa result = pessoaController.create(pessoa);
         assertEquals("Teste", result.getNome());
     }
 
@@ -77,7 +78,7 @@ class PessoaControllerTest {
         newPessoa.setNome("New");
         when(pessoaRepository.findById(1L)).thenReturn(Optional.of(oldPessoa));
         when(pessoaRepository.save(any(Pessoa.class))).thenReturn(oldPessoa);
-        ResponseEntity<Pessoa> response = pessoaController.Put(1L, newPessoa);
+        ResponseEntity<Pessoa> response = pessoaController.update(1L, newPessoa);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("New", response.getBody().getNome());
@@ -88,7 +89,7 @@ class PessoaControllerTest {
         Pessoa newPessoa = new Pessoa();
         newPessoa.setNome("New");
         when(pessoaRepository.findById(1L)).thenReturn(Optional.empty());
-        ResponseEntity<Pessoa> response = pessoaController.Put(1L, newPessoa);
+        ResponseEntity<Pessoa> response = pessoaController.update(1L, newPessoa);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
@@ -98,14 +99,43 @@ class PessoaControllerTest {
         pessoa.setId(1L);
         when(pessoaRepository.findById(1L)).thenReturn(Optional.of(pessoa));
         doNothing().when(pessoaRepository).delete(pessoa);
-        ResponseEntity<Object> response = pessoaController.Delete(1L);
+        ResponseEntity<Void> response = pessoaController.delete(1L);
         assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     void testDeleteNotFound() {
         when(pessoaRepository.findById(1L)).thenReturn(Optional.empty());
-        ResponseEntity<Object> response = pessoaController.Delete(1L);
+        ResponseEntity<Void> response = pessoaController.delete(1L);
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+    }
+
+    @Test
+    void testCreateWithNullName() {
+        Pessoa pessoa = new Pessoa();
+        pessoa.setNome(null);
+        when(pessoaRepository.save(any(Pessoa.class))).thenReturn(pessoa);
+        
+        Pessoa result = pessoaController.create(pessoa);
+        assertNull(result.getNome());
+        verify(pessoaRepository).save(pessoa);
+    }
+
+    @Test
+    void testUpdateWithNewName() {
+        Pessoa oldPessoa = new Pessoa();
+        oldPessoa.setId(1L);
+        oldPessoa.setNome("Old");
+        
+        Pessoa newPessoa = new Pessoa();
+        newPessoa.setNome("Updated");
+        
+        when(pessoaRepository.findById(1L)).thenReturn(Optional.of(oldPessoa));
+        when(pessoaRepository.save(any(Pessoa.class))).thenAnswer(i -> i.getArguments()[0]);
+        
+        ResponseEntity<Pessoa> response = pessoaController.update(1L, newPessoa);
+        
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("Updated", response.getBody().getNome());
     }
 }

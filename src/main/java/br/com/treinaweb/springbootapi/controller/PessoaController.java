@@ -1,6 +1,6 @@
 package br.com.treinaweb.springbootapi.controller;
 
-import java.util.List;
+import java.util.SequencedCollection;
 import java.util.Optional;
 
 import br.com.treinaweb.springbootapi.entity.Pessoa;
@@ -42,7 +42,7 @@ public class PessoaController {
             @ApiResponse(responseCode = "500", description = "Foi gerada uma exceção"),
     })
     @GetMapping(value = "/pessoa", produces = "application/json")
-    public List<Pessoa> Get() {
+    public SequencedCollection<Pessoa> getAll() {
         return pessoaRepository.findAll();
     }
 
@@ -56,10 +56,10 @@ public class PessoaController {
             @ApiResponse(responseCode = "500", description = "Foi gerada uma exceção"),
     })
     @GetMapping(value = "/pessoa/{id}", produces = "application/json")
-    public ResponseEntity<Pessoa> GetById(@PathVariable(value = "id") long id) {
+    public ResponseEntity<Pessoa> getById(@PathVariable(value = "id") long id) {
         return pessoaRepository.findById(id)
-                .map(pessoa -> new ResponseEntity<>(pessoa, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     /// Creates a new pessoa.
@@ -72,7 +72,7 @@ public class PessoaController {
         @ApiResponse(responseCode = "500", description = "Foi gerada uma exceção"),
     })
     @PostMapping(value = "/pessoa", produces = "application/json", consumes = "application/json")
-    public Pessoa Post(@Valid @RequestBody Pessoa pessoa) {
+    public Pessoa create(@Valid @RequestBody Pessoa pessoa) {
         return pessoaRepository.save(pessoa);
     }
 
@@ -87,13 +87,13 @@ public class PessoaController {
         @ApiResponse(responseCode = "500", description = "Foi gerada uma exceção"),
     })
     @PutMapping(value = "/pessoa/{id}", produces = "application/json", consumes = "application/json")
-    public ResponseEntity<Pessoa> Put(@PathVariable(value = "id") long id, @Valid @RequestBody Pessoa newPessoa) {
+    public ResponseEntity<Pessoa> update(@PathVariable(value = "id") long id, @Valid @RequestBody Pessoa newPessoa) {
         return pessoaRepository.findById(id)
                 .map(pessoa -> {
                     pessoa.setNome(newPessoa.getNome());
-                    return new ResponseEntity<>(pessoaRepository.save(pessoa), HttpStatus.OK);
+                    return ResponseEntity.ok(pessoaRepository.save(pessoa));
                 })
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     /// Deletes a pessoa by id.
@@ -106,12 +106,12 @@ public class PessoaController {
             @ApiResponse(responseCode = "500", description = "Foi gerada uma exceção"),
     })
     @DeleteMapping(value = "/pessoa/{id}", produces = "application/json")
-    public ResponseEntity<Object> Delete(@PathVariable(value = "id") long id) {
+    public ResponseEntity<Void> delete(@PathVariable(value = "id") long id) {
         return pessoaRepository.findById(id)
                 .map(pessoa -> {
                     pessoaRepository.delete(pessoa);
-                    return new ResponseEntity<>(HttpStatus.OK);
+                    return ResponseEntity.ok().<Void>build();
                 })
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
