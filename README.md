@@ -1,135 +1,130 @@
-# Springboot Api
+# Springboot API 🚀
+
+Este projeto é uma **API REST moderna e de alto desempenho**, escrita em **Java 25 (LTS)** utilizando o ecossistema **Spring Boot 4**. O objetivo desta API é demonstrar as melhores práticas em desenvolvimento back-end, incluindo autenticação baseada em JWT, testes robustos automatizados com relatórios de cobertura (JaCoCo) e deployment simplificado em contêineres Docker usando Multi-stage builds.
 
 ## Índice
-* [Build and Run](#build-and-run)
-    * [Run Application](#run-application)
-        * [Newman Test](#newman-test)
-        * [Postman Test](#postman-test)
-* [Local Build](#local-build)
-    * [Run Tests](#run-tests)
-        * [Jacoco Report](#jacoco-report)
-* [Swagger](#swagger)
-* [Team](#team)
+* [Sobre o Projeto](#sobre-o-projeto)
+* [Arquitetura](#arquitetura)
+* [Como Executar (Docker)](#como-executar-docker)
+* [Como Desenvolver (Local)](#como-desenvolver-local)
+* [Testes de Cobertura (JaCoCo)](#testes-de-cobertura-jacoco)
+* [Swagger & Automação de Requests](#swagger--automação-de-requests)
+* [Equipe](#equipe)
 
 ---
-Este repositório é um fork de [wladimilson/springbootapi] escrito por [Wladimilson M. Nascimento].
-
-Inclui os arquivos [Dockerfile] e [docker-compose], além deste documento que mostra como construir e implantar uma aplicação Java.
-
-Leia os comentários nos arquivos [Dockerfile] e [docker-compose] para mais informações.
-
----
-
-* [Criando uma API REST com o Spring Boot]
 
 ## Sobre o Projeto
 
-Esta aplicação é uma API REST desenvolvida com Spring Boot, utilizando autenticação JWT, documentação automática com Swagger/OpenAPI, testes automatizados (JUnit, Mockito) e relatório de cobertura de testes com Jacoco. O projeto está pronto para execução em ambiente local ou via Docker.
+A API gerencia informações de `Pessoa` através de um CRUD seguro. 
 
-### Principais Funcionalidades
-- CRUD de pessoas (entidade Pessoa)
-- Autenticação JWT
-- Documentação Swagger
-- Testes automatizados e cobertura Jacoco
-- Pronto para Docker
+**Características Principais:**
+- **Tecnologia Ponta:** Java 25 (Virtual Threads ativas + `SequencedCollections`) e Spring Boot 4.
+- **Segurança (JWT):** Geração e validação de tokens JWT (RSA assinados) via `AuthController` e `TokenAuthenticationService`.
+- **Validação e Banco de Dados:** JPA / Hibernate para banco de dados, com validação provida pelo `hibernate-validator` (Jakarta EE).
+- **Testes Abrangentes:** Testes unitários em todos os endpoints (`PessoaControllerTest`, `AuthControllerTest`), mantendo a estabilidade.
+- **Docker Multi-stage Build:** Um processo isolado e seguro no Docker que compreende etapas de base, testes automáticos, construção (com um JRE minimalista via `jlink`) e imagem leve final (`runtime`).
 
-## Build and Run
+---
+
+## Arquitetura
+
+O diagrama abaixo detalha o fluxo de comunicação entre os clientes (Postman/Newman), a camada de segurança da API e a interação dos componentes internos para resolução da lógica de negócio.
+
+```mermaid
+sequenceDiagram
+    participant Client as Client (Browser/Postman)
+    participant Auth as AuthController
+    participant TokenSvc as TokenAuthenticationService
+    participant PessoaCtrl as PessoaController
+    participant DB as MariaDB / H2
+    
+    %% Fluxo de Autenticação
+    Client->>Auth: POST /login (username, password)
+    Auth->>Auth: Valida Credenciais
+    Auth->>TokenSvc: generateToken(Authentication)
+    TokenSvc-->>Auth: Retorna Token JWT (RSA)
+    Auth-->>Client: Retorna Token JWT
+    
+    %% Fluxo de Requisição Segura
+    Client->>PessoaCtrl: GET /pessoa (Bearer Token)
+    PessoaCtrl->>PessoaCtrl: Security Filter (Valida JWT)
+    PessoaCtrl->>DB: Executa findAll() (Via JPA Repository)
+    DB-->>PessoaCtrl: Retorna SequencedCollection<Pessoa>
+    PessoaCtrl-->>Client: Retorna 200 OK (JSON)
+```
+
+---
+
+## Como Executar (Docker)
 
 [![asciicast]](https://asciinema.org/a/694412)
 
-Você precisa apenas do [docker] em sua máquina.
-Não é necessário `javac` (JAVA JDK®) ou `java` (JAVA Runtime®) para buildar ou rodar a aplicação.
+Você só precisa do [Docker](https://docs.docker.com/get-docker/) instalado. Não é necessário ter o JDK localmente para construir a aplicação, pois tudo é isolado através do `Dockerfile`.
 
-### Run Application
-
-Para rodar a aplicação com Docker:
-
+Para provisionar o banco de dados (MariaDB) e rodar a aplicação:
 ```sh
 docker-compose up --build
 ```
+A API estará pronta para receber requisições em `http://localhost:8080`.
 
-A aplicação estará disponível em http://localhost:8080
+*(Veja as configurações de banco em `docker-compose.yml`)*.
 
-### Newman Test
+---
 
-Testes automatizados podem ser executados com o Newman (CLI do Postman):
+## Como Desenvolver (Local)
 
+Para rodar a aplicação no seu ambiente (necessário Java 25 configurado, de preferência usando o [SDKMAN](https://sdkman.io/)):
+
+1.  Baixe e compile o projeto (pulando testes no primeiro empacotamento, se preferir):
+    ```sh
+    ./mvnw clean package -DskipTests
+    ```
+2. Inicie a aplicação via Maven (ou rode o artefato `target/springbootapi-0.0.1-SNAPSHOT.jar`):
+    ```sh
+    ./mvnw spring-boot:run
+    ```
+
+---
+
+## Testes e Cobertura (JaCoCo)
+
+Os testes podem ser rodados sem depender do banco de dados na infra (utiliza-se H2 em memória). A cobertura de código atual atende as classes principais e componentes de autenticação.
+
+Para executar localmente e gerar os relatórios do **JaCoCo**:
 ```sh
-docker-compose run --rm newman
+./mvnw clean test jacoco:report
 ```
 
-Os relatórios serão gerados na pasta `newman/tests/newman/`.
-
-### Postman Test
-
-Você pode importar a coleção Postman localizada em `newman/tests/simple_spring_boot_rest_api.postman_collection.json` e os ambientes para testar manualmente.
-
-## Local Build
-
-Para buildar localmente:
-
-```sh
-./mvnw clean package
-```
-
-### Run Tests
-
-Para rodar os testes automatizados:
-
-```sh
-./mvnw test
-```
-
-#### Jacoco Report
-
-Após rodar os testes, o relatório de cobertura Jacoco estará disponível em:
-
+O relatório em formato HTML ficará disponível no seu diretório `target`:
 ```
 target/site/jacoco/index.html
 ```
 
-Veja a imagem de exemplo em `img/jacoco-report.png`.
-
-## Swagger
-
-A documentação interativa da API está disponível em:
-
+*(No Docker, implementamos o **Test Stage**: O projeto possui um target chamado `test` no Dockerfile que quebra o build automaticamente se os testes falharem)*.
+```sh
+docker build --target test -t springbootapi-test .
 ```
-http://localhost:8080/swagger-ui/index.html
-```
-
-Veja a imagem de exemplo em `img/swagger.png`.
-
-## Team
-
-- [Wladimilson M. Nascimento] (autor original)
-- [Pedro Robson Leão] (atualizações e manutenção)
 
 ---
 
-> Para dúvidas, sugestões ou contribuições, abra uma issue ou envie um pull request.
+## Swagger & Automação de Requests
 
+### Swagger UI
+A API descreve-se automaticamente na rota padrão do Swagger:
+```
+http://localhost:8080/swagger-ui/index.html
+```
+Na documentação você pode visualizar todas as rotas de `Pessoa` e o modelo de dados de resposta.
 
-[sdkman]:https://sdkman.io/
-[Pedro Robson Leão]:mailto:pedro.leao@gmail.com
-[Diego Schmidt]:dceschmidt@gmail.com
-[Newman]:https://learning.postman.com/docs/collections/using-newman-cli/newman-options/
-[wladimilson/springbootapi]:https://github.com/wladimilson/springbootapi
-[Wladimilson M. Nascimento]:https://www.treinaweb.com.br/blog/autor/wladimilson-m-nascimento
-[Dockerfile]:Dockerfile
-[docker-compose]:docker-compose.yml
-[Criando uma API REST com o Spring Boot]:https://www.treinaweb.com.br/blog/criando-uma-api-rest-com-o-spring-boot
-[asciicast]:https://asciinema.org/a/694412.svg
-[docker]:https://docs.docker.com/get-docker/
-[stack]:./img/docker-compose.png
-[/newman/test]:./newman/test/
-[Postman]:https://www.postman.com/downloads/
-[Test APIs and write scripts in Postman]:https://learning.postman.com/docs/tests-and-scripts/tests-and-scripts/
-[jacoco]:https://www.jacoco.org/jacoco/
-[local build]:#local-build
-[run tests]:#run-tests
-[target/site/jacoco/]:.target/site/jacoco/
-[jacoco-report]:./img/jacoco-report.png
-[newman-report]:./img/newman-report.png
-[postman-report]:./img/postman-report.png
-[swagger]:./img/swagger.png
+### Automação via Newman (Postman)
+Para rodar os fluxos automáticos da coleção com o Newman no Docker e simular testes E2E sobre a API conteinerizada:
+```sh
+docker-compose run --rm newman
+```
+Os relatórios finais da execução de ponta-a-ponta ficarão registrados na pasta `newman/tests/newman/`.
+
+---
+
+## Equipe
+- **Wladimilson M. Nascimento** *(Autor original e idealização)*
+- **Pedro Robson Leão** *(Manutenção, migração e atualização arquitetural)*
