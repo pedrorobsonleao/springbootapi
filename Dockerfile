@@ -12,11 +12,11 @@ RUN ./mvnw test jacoco:report
 # 3. Builder stage: creates minimal JRE and packages the application
 FROM base AS builder
 # Added jdk.crypto.ec for JWT/RSA support
-# Fixed --compress to use 'zip' (JDK 21+)
+# Fixed --compress to use 'zip-6' (JDK 21+)
 RUN jlink \
     --verbose \
-    --add-modules java.base,java.compiler,java.instrument,java.management,java.naming,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,jdk.jcmd,jdk.jdwp.agent,jdk.unsupported,jdk.crypto.ec,jdk.management.agent \
-    --compress zip:6 \
+    --add-modules java.base,java.compiler,java.instrument,java.management,java.naming,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,jdk.jcmd,jdk.jdwp.agent,jdk.unsupported,jdk.crypto.ec,jdk.management.agent,java.desktop \
+    --compress zip-6 \
     --no-header-files \
     --no-man-pages \
     --strip-debug \

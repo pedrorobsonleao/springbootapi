@@ -1,7 +1,5 @@
 package br.com.treinaweb.springbootapi.security;
 
-package br.com.treinaweb.springbootapi.security;
-
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.stream.Collectors;
@@ -46,7 +44,4 @@ public class TokenAuthenticationService {
 
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
-}
-    }
-
 }
