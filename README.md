@@ -71,6 +71,20 @@ A API estará pronta para receber requisições em `http://localhost:8080`.
 
 ---
 
+## Interface de Administração (Spring Boot Admin)
+
+O projeto inclui o **Spring Boot Admin** para monitoramento e gerenciamento da aplicação. Através desta interface, você pode visualizar detalhes sobre a saúde da aplicação, métricas, variáveis de ambiente, logs e, agora, a lista de dependências e a árvore de dependências (SBOM).
+
+Para acessar a interface administrativa:
+
+1.  **URL:** `http://localhost:8080/admin`
+2.  **Usuário:** `admin`
+3.  **Senha:** `admin`
+
+*As abas de dependências (`Dependencies > Dependencies` e `Dependencies > Dependencies Trees`) já estão configuradas e preenchidas via integração com o `cyclonedx-maven-plugin`.*
+
+---
+
 ## Como Desenvolver (Local)
 
 Para rodar a aplicação no seu ambiente (necessário Java 25 configurado, de preferência usando o [SDKMAN](https://sdkman.io/)):

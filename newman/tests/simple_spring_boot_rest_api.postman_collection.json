@@ -1111,6 +1111,66 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "actuator",
+			"item": [
+				{
+					"name": "Health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SBOM",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/sbom",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"sbom"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SBOM Application",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/actuator/sbom/application",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"actuator",
+								"sbom",
+								"application"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	],
 	"event": [

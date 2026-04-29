@@ -38,6 +38,8 @@ management:
   endpoint:
     health:
       show-details: always
+    sbom:
+      enabled: true
 
 rsa:
   privateKey: classpath:certs/private-key.pem
