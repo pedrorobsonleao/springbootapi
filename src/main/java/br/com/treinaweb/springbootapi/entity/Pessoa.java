@@ -6,6 +6,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 public class Pessoa
@@ -17,6 +19,8 @@ public class Pessoa
 
     @Schema(description = "Nome da pessoa")
     @Column(nullable = false)
+    @NotBlank(message = "O nome é obrigatório")
+    @Size(min = 3, max = 255, message = "O nome deve ter entre 3 e 255 caracteres")
     private String nome;
 
     public long getId() {

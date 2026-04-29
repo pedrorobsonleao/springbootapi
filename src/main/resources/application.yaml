@@ -1,7 +1,20 @@
 spring:
+  application:
+    name: "springbootapi"
   threads:
     virtual:
       enabled: true
+  boot:
+    admin:
+      context-path: /admin
+      client:
+        url: http://localhost:8080/admin
+        username: admin
+        password: admin
+        instance:
+          metadata:
+            user.name: admin
+            user.password: admin
   datasource:
     url: jdbc:mysql://localhost:3306/treinaweb?useSSL=false
     username: treinawebusr
@@ -16,6 +29,15 @@ spring:
         dialect: org.hibernate.dialect.MariaDBDialect
     hibernate:
       ddl-auto: update
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
 
 rsa:
   privateKey: classpath:certs/private-key.pem
