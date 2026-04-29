@@ -20,8 +20,8 @@ A API gerencia informações de `Pessoa` através de um CRUD seguro.
 **Características Principais:**
 - **Tecnologia Ponta:** Java 25 (Virtual Threads ativas + `SequencedCollections`) e Spring Boot 4.
 - **Segurança (JWT):** Geração e validação de tokens JWT (RSA assinados) via `AuthController` e `TokenAuthenticationService`.
-- **Validação e Banco de Dados:** JPA / Hibernate para banco de dados, com validação provida pelo `hibernate-validator` (Jakarta EE).
-- **Testes Abrangentes:** Testes unitários em todos os endpoints (`PessoaControllerTest`, `AuthControllerTest`), mantendo a estabilidade.
+- **Validação e Banco de Dados:** JPA / Hibernate para banco de dados, com validação de entidade estrita provida pelo `hibernate-validator` (Jakarta EE), garantindo integridade dos dados com anotações como `@NotBlank` e `@Size`.
+- **Testes Abrangentes:** Testes unitários focados na confiabilidade de todos os endpoints (`PessoaControllerTest`, `AuthControllerTest`), cobrindo desde o caminho feliz até cenários de falha (credenciais incorretas, validação de payload).
 - **Docker Multi-stage Build:** Um processo isolado e seguro no Docker que compreende etapas de base, testes automáticos, construção (com um JRE minimalista via `jlink`) e imagem leve final (`runtime`).
 
 ---
@@ -117,7 +117,9 @@ http://localhost:8080/swagger-ui/index.html
 Na documentação você pode visualizar todas as rotas de `Pessoa` e o modelo de dados de resposta.
 
 ### Automação via Newman (Postman)
-Para rodar os fluxos automáticos da coleção com o Newman no Docker e simular testes E2E sobre a API conteinerizada:
+Para simular testes E2E (End-to-End) robustos e automatizados, a coleção do Postman foi aprimorada para validar não apenas o fluxo principal de sucesso (200 OK), mas também os fluxos de exceção, como acesso não autorizado (401), entidade não encontrada (404) e validações de dados inválidos (400 Bad Request). 
+
+Para rodar os fluxos automáticos da coleção com o Newman no Docker e validar a API conteinerizada:
 ```sh
 docker-compose run --rm newman
 ```

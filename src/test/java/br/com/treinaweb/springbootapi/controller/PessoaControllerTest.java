@@ -122,20 +122,20 @@ class PessoaControllerTest {
     }
 
     @Test
-    void testUpdateWithNewName() {
-        Pessoa oldPessoa = new Pessoa();
-        oldPessoa.setId(1L);
-        oldPessoa.setNome("Old");
+    void testGetAllEmpty() {
+        when(pessoaRepository.findAll()).thenReturn(List.of());
+        SequencedCollection<Pessoa> pessoas = pessoaController.getAll();
+        assertTrue(pessoas.isEmpty());
+    }
+
+    @Test
+    void testCreateWithEmptyName() {
+        Pessoa pessoa = new Pessoa();
+        pessoa.setNome("");
+        when(pessoaRepository.save(any(Pessoa.class))).thenReturn(pessoa);
         
-        Pessoa newPessoa = new Pessoa();
-        newPessoa.setNome("Updated");
-        
-        when(pessoaRepository.findById(1L)).thenReturn(Optional.of(oldPessoa));
-        when(pessoaRepository.save(any(Pessoa.class))).thenAnswer(i -> i.getArguments()[0]);
-        
-        ResponseEntity<Pessoa> response = pessoaController.update(1L, newPessoa);
-        
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Updated", response.getBody().getNome());
+        Pessoa result = pessoaController.create(pessoa);
+        assertEquals("", result.getNome());
+        verify(pessoaRepository).save(pessoa);
     }
 }

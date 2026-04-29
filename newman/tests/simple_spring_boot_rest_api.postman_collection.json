@@ -83,6 +83,49 @@
 							"body": null
 						}
 					]
+				},
+				{
+					"name": "Login - Falha",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(`${pm.info.requestName} - Status is 401`, function () {",
+									"    pm.response.to.have.status(401);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{username}}\",\n    \"password\": \"wrong\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"login"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -566,8 +609,7 @@
 									"listen": "test",
 									"script": {
 										"exec": [
-											"['token','db_id','db_nome','id']",
-											"    .forEach(k=>pm.environment.unset(k)); // remove as variaveis temporarias"
+											"// removed unset, handled in last test"
 										],
 										"type": "text/javascript",
 										"packages": {}
@@ -643,6 +685,76 @@
 									"body": "{}"
 								}
 							]
+						},
+						{
+							"name": "GetById - Não Encontrado",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(`${pm.info.requestName} - Status is 404`, function () {",
+											"    pm.response.to.have.status(404);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/pessoa/999999",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"pessoa",
+										"999999"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete - Não Encontrado",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(`${pm.info.requestName} - Status is 404`, function () {",
+											"    pm.response.to.have.status(404);",
+											"});",
+											"['token','db_id','db_nome','id'].forEach(k=>pm.environment.unset(k)); // remove as variaveis temporarias"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/pessoa/999999",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"pessoa",
+										"999999"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -742,6 +854,55 @@
 							"body": "{\n  \"id\": -82075899,\n  \"nome\": \"ullamco fugiat\"\n}"
 						}
 					]
+				},
+				{
+					"name": "Post - Nome Curto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(`${pm.info.requestName} - Status is 400`, function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"Ab\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/pessoa",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pessoa"
+							]
+						}
+					},
+					"response": []
 				},
 				{
 					"name": "GetAll",
@@ -879,6 +1040,45 @@
 							"body": "{\n  \"value\": \"reference #/components/schemas/Error not found in the OpenAPI spec\"\n}"
 						}
 					]
+				},
+				{
+					"name": "GetAll - Sem Auth",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(`${pm.info.requestName} - Status is 401 or 403`, () => {",
+									"    pm.expect(pm.response.code).to.be.oneOf([401, 403]);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/pessoa",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pessoa"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"auth": {
@@ -919,21 +1119,16 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
+					"const workflow = pm.environment.get('workflow').split(',').filter(Boolean); // get workflow array, remove empty strings",
 					"",
-					"const token = pm.environment.get(\"token\");       // token ",
-					"const workflow = pm.environment.get('workflow').split(','); // workflow",
+					"let currentRequest = pm.info.requestName; // nome do request atual",
+					"let idx = workflow.indexOf(currentRequest); // id do request no workflow",
 					"",
-					"let next = pm.info.requestName; // nome do request",
-					"let idx = workflow.indexOf(next); // id do request no workflow",
-					"",
-					"if(token) { // se existir token",
-					"    next = (idx>=0) ? workflow[idx+1] : null;  // pega nome do proximo request no workflow ",
-					"} else { // se nso existir token",
-					"    next = workflow[0]; // pega o primeiro request do workflow",
-					"}",
+					"let next = (idx >= 0 && idx < workflow.length - 1) ? workflow[idx + 1] : null;  // pega nome do proximo request no workflow ",
 					"",
 					"console.log((next)?`next: ${next}`:'end tests'); // loga o proximo request na console",
-					"pm.execution.setNextRequest(next); // seta o proximo request"
+					"if (next) pm.execution.setNextRequest(next); // seta o proximo request",
+					"else pm.execution.setNextRequest(null);"
 				]
 			}
 		},
@@ -942,11 +1137,11 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					"pm.test(`${pm.info.requestName} - OK` , () => {",
-					"    pm.response.to.have.status(200); // realiza a valisacao do status OK paracada um dos requests",
-					"});",
-					"",
-					""
+					"if (!pm.info.requestName.includes(\" - \")) {",
+					"    pm.test(`${pm.info.requestName} - OK` , () => {",
+					"        pm.response.to.have.status(200); // realiza a valisacao do status OK paracada um dos requests",
+					"    });",
+					"}"
 				]
 			}
 		}
