@@ -603,6 +603,131 @@
 							]
 						},
 						{
+							"name": "Put - Nome Curto",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(`${pm.info.requestName} - Status is 400`, function () {",
+											"    pm.response.to.have.status(400);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"id\": {{db_id}},\n  \"nome\": \"Ab\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/pessoa/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"pessoa",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{db_id}}",
+											"description": "(Required) id"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Put - Nome Longo",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set('long_nome', 'A'.repeat(256));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(`${pm.info.requestName} - Status is 400`, function () {",
+											"    pm.response.to.have.status(400);",
+											"});",
+											"pm.environment.unset('long_nome');"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"id\": {{db_id}},\n  \"nome\": \"{{long_nome}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/pessoa/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"pessoa",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{db_id}}",
+											"description": "(Required) id"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Delete",
 							"event": [
 								{
@@ -886,6 +1011,66 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"nome\": \"Ab\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/pessoa",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"pessoa"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Post - Nome Longo",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.set('long_nome', 'A'.repeat(256));"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(`${pm.info.requestName} - Status is 400`, function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"pm.environment.unset('long_nome');"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nome\": \"{{long_nome}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"

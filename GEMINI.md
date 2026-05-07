@@ -1,6 +1,6 @@
 Analisar o codigo java como um especialista
 
-
-- revise os arquivos json com testes executados via newman e inclua testes que estejam faltando.
-- valide se falta criar algum teste unitario e corrija se necessario
+- quero tornar este codigo uma referencia para aprendizado e uso futuro
+- analise os sete ultimos commits e crie uma documentaçao clara explicando passos e mudanças realizadas
+- crie diagrama e aponte observacoes para que o codigo possa ser facilmente reproduzido
 
