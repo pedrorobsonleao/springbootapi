@@ -23,7 +23,7 @@ services:
       - ${DB_ROOT_PASSWORD_FILE_PATH:-./db/pwd.txt}:/run/secrets/db-password # insert secret with volume to work in wsl-2
     restart: always
     ports:
-      - "${DB_PORT:-3306}:3306"
+      - "127.0.0.1:${DB_PORT:-3306}:3306"
 
   # application
   app:
@@ -53,7 +53,7 @@ services:
     image: phpmyadmin/phpmyadmin:latest
     container_name: dbadmin
     ports:
-      - "${PMA_PORT:-9090}:80"
+      - "127.0.0.1:${PMA_PORT:-9090}:80"
     environment:
       - PMA_ARBITRARY=1
       - PMA_HOST=mysql

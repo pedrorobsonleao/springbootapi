@@ -15,7 +15,7 @@ FROM base AS builder
 # Fixed --compress to use 'zip-6' (JDK 21+)
 RUN jlink \
     --verbose \
-    --add-modules java.base,java.compiler,java.instrument,java.management,java.naming,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,jdk.jcmd,jdk.jdwp.agent,jdk.unsupported,jdk.crypto.ec,jdk.management.agent,java.desktop \
+    --add-modules java.base,java.compiler,java.instrument,java.management,java.naming,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,jdk.unsupported,jdk.crypto.ec,jdk.management.agent,java.desktop \
     --compress zip-6 \
     --no-header-files \
     --no-man-pages \
@@ -25,6 +25,12 @@ RUN ./mvnw clean package -DskipTests
 
 # 4. Runtime stage: final lightweight application image
 FROM ubuntu:24.04 AS runtime
+
+# Upgrade OS packages to apply security patches and install CA certificates
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
 
 # maintainer name
 LABEL authors="Pedro Robson Leão <pedro.leao@gmail.com>"
@@ -60,16 +66,17 @@ exec java ${JAVA_OPTS} \\\n\
   -XshowSettings:vm \\\n\
   -XX:MaxRAMPercentage=90 \\\n\
   -jar application.jar' > ${APP_DIR}/entrypoint.sh && \
-    chmod +x ${APP_DIR}/entrypoint.sh
+    chmod +x ${APP_DIR}/entrypoint.sh && \
+    chown ${USER_NAME}:${GROUP_NAME} ${APP_DIR}/entrypoint.sh
 
 # crate app workdir to runtime application
 WORKDIR ${APP_DIR}
 
 # Copy downsized JRE from builder image.
-COPY --from=builder /minimal-jre $JAVA_HOME
+COPY --from=builder --chown=${USER_NAME}:${GROUP_NAME} /minimal-jre $JAVA_HOME
 
 # copy build jar file from build image
-COPY --from=builder app/target/${APP} application.jar
+COPY --from=builder --chown=${USER_NAME}:${GROUP_NAME} app/target/${APP} application.jar
 
 # expose http access application port
 EXPOSE 8080

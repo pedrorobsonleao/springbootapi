@@ -31,7 +31,8 @@ public class AdminSecurityConfig {
                 .requestMatchers(this.adminServer.path("/assets/**")).permitAll()
                 .requestMatchers(this.adminServer.path("/login")).permitAll()
                 .requestMatchers(this.adminServer.path("/instances/**")).permitAll()
-                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers("/actuator/health", "/actuator/info", "/actuator/sbom", "/actuator/sbom/**").permitAll()
+                .requestMatchers("/actuator/**").authenticated()
                 .anyRequest().authenticated()
             )
             .formLogin(formLogin -> formLogin

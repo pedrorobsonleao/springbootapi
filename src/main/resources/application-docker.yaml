@@ -30,5 +30,5 @@ spring:
       ddl-auto: update
 
 rsa:
-  privateKey: classpath:certs/private-key.pem
-  publicKey: classpath:certs/public-key.pem
+  privateKey: ${RSA_PRIVATE_KEY_PATH:classpath:certs/private-key.pem}
+  publicKey: ${RSA_PUBLIC_KEY_PATH:classpath:certs/public-key.pem}
