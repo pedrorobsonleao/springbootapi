@@ -15,15 +15,15 @@ services:
     secrets:
       - db-password
     environment:
-      - MARIADB_USER=treinawebusr
-      - MARIADB_PASSWORD=treinawebpwd
-      - MARIADB_DATABASE=treinaweb
+      - MARIADB_USER=${DB_USER:-treinawebusr}
+      - MARIADB_PASSWORD=${DB_PASSWORD:-treinawebpwd}
+      - MARIADB_DATABASE=${DB_DATABASE:-treinaweb}
       - MARIADB_ROOT_PASSWORD_FILE=/run/secrets/db-password
     volumes:
-      - ./db/pwd.txt:/run/secrets/db-password # insert secret with volume to work in wsl-2
+      - ${DB_ROOT_PASSWORD_FILE_PATH:-./db/pwd.txt}:/run/secrets/db-password # insert secret with volume to work in wsl-2
     restart: always
     ports:
-      - 3306:3306
+      - "${DB_PORT:-3306}:3306"
 
   # application
   app:
@@ -31,9 +31,18 @@ services:
     build: .
     container_name: "java_app"
     ports:
-      - "8080:8080"
+      - "${APP_PORT:-8080}:8080"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/${DB_DATABASE:-treinaweb}?useSSL=false
+      - SPRING_DATASOURCE_USERNAME=${DB_USER:-treinawebusr}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-treinawebpwd}
+      - SPRING_BOOT_ADMIN_CLIENT_URL=http://app:8080/admin
+      - SPRING_BOOT_ADMIN_CLIENT_USERNAME=${SPRING_BOOT_ADMIN_USERNAME:-admin}
+      - SPRING_BOOT_ADMIN_CLIENT_PASSWORD=${SPRING_BOOT_ADMIN_PASSWORD:-admin}
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_BASE_URL=http://app:8080
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_METADATA_USER_NAME=${SPRING_BOOT_ADMIN_USERNAME:-admin}
+      - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_METADATA_USER_PASSWORD=${SPRING_BOOT_ADMIN_PASSWORD:-admin}
     depends_on:
       mysql:
         condition: service_healthy
@@ -44,12 +53,12 @@ services:
     image: phpmyadmin/phpmyadmin:latest
     container_name: dbadmin
     ports:
-      - "9090:80"
+      - "${PMA_PORT:-9090}:80"
     environment:
       - PMA_ARBITRARY=1
       - PMA_HOST=mysql
-      - PMA_USER=treinawebusr
-      - PMA_PASSWORD=treinawebpwd
+      - PMA_USER=${DB_USER:-treinawebusr}
+      - PMA_PASSWORD=${DB_PASSWORD:-treinawebpwd}
     depends_on:
       mysql:
         condition: service_healthy
@@ -76,4 +85,4 @@ services:
 
 secrets:
   db-password:
-    file: db/pwd.txt
+    file: ${DB_ROOT_PASSWORD_FILE_PATH:-db/pwd.txt}
