@@ -1,5 +1,5 @@
 # 1. Base stage: setup environment and source code
-FROM eclipse-temurin:25-jdk AS base
+FROM eclipse-temurin:25-jdk-alpine AS base
 WORKDIR /app
 COPY . /app
 RUN sed -i 's/\r$//' mvnw
@@ -15,7 +15,7 @@ FROM base AS builder
 # Fixed --compress to use 'zip-6' (JDK 21+)
 RUN jlink \
     --verbose \
-    --add-modules java.base,java.compiler,java.instrument,java.management,java.naming,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,jdk.jcmd,jdk.jdwp.agent,jdk.unsupported,jdk.crypto.ec,jdk.management.agent,java.desktop \
+    --add-modules java.base,java.compiler,java.instrument,java.management,java.naming,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,jdk.unsupported,jdk.crypto.ec,jdk.management.agent,java.desktop \
     --compress zip-6 \
     --no-header-files \
     --no-man-pages \
@@ -24,7 +24,12 @@ RUN jlink \
 RUN ./mvnw clean package -DskipTests
 
 # 4. Runtime stage: final lightweight application image
-FROM ubuntu:24.04 AS runtime
+FROM alpine:3.20 AS runtime
+
+# Upgrade OS packages to apply security patches and install CA certificates
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache ca-certificates
 
 # maintainer name
 LABEL authors="Pedro Robson Leão <pedro.leao@gmail.com>"
@@ -43,33 +48,23 @@ ARG GROUP_ID="1001"
 ARG APP_DIR=/app
 ARG SPRING_PROFILES_ACTIVE=local
 
-RUN groupadd --gid ${GROUP_ID} ${GROUP_NAME} && \
-    useradd --no-create-home --gid ${GROUP_ID} --uid ${USER_ID} ${USER_NAME} && \
+RUN addgroup --gid ${GROUP_ID} ${GROUP_NAME} && \
+    adduser --no-create-home --uid ${USER_ID} --ingroup ${GROUP_NAME} --disabled-password ${USER_NAME} && \
     mkdir ${APP_DIR} && \
     chown -R ${USER_NAME}:${GROUP_NAME} ${APP_DIR}
 
-# Create entrypoint script properly
-RUN echo '#!/bin/sh\n\
-echo "Java Opts=${JAVA_OPTS}"\n\
-exec java ${JAVA_OPTS} \\\n\
-  --add-opens java.base/java.time=ALL-UNNAMED \\\n\
-  -Duser.timezone=UTC \\\n\
-  -DjsonLogsEnabled=true \\\n\
-  -Djava.security.egd=file:/dev/./urandom \\\n\
-  -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE} \\\n\
-  -XshowSettings:vm \\\n\
-  -XX:MaxRAMPercentage=90 \\\n\
-  -jar application.jar' > ${APP_DIR}/entrypoint.sh && \
-    chmod +x ${APP_DIR}/entrypoint.sh
+# Copy entrypoint script and make it executable
+COPY --chown=${USER_NAME}:${GROUP_NAME} docker-entrypoint.sh ${APP_DIR}/entrypoint.sh
+RUN chmod +x ${APP_DIR}/entrypoint.sh
 
 # crate app workdir to runtime application
 WORKDIR ${APP_DIR}
 
 # Copy downsized JRE from builder image.
-COPY --from=builder /minimal-jre $JAVA_HOME
+COPY --from=builder --chown=${USER_NAME}:${GROUP_NAME} /minimal-jre $JAVA_HOME
 
 # copy build jar file from build image
-COPY --from=builder app/target/${APP} application.jar
+COPY --from=builder --chown=${USER_NAME}:${GROUP_NAME} app/target/${APP} application.jar
 
 # expose http access application port
 EXPOSE 8080

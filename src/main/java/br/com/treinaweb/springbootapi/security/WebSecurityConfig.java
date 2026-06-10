@@ -46,6 +46,12 @@ public class WebSecurityConfig {
     @Value("${rsa.publicKey}")
     private RSAPublicKey publicKey;
 
+    @Value("${spring.boot.admin.client.username:admin}")
+    private String adminUsername;
+
+    @Value("${spring.boot.admin.client.password:admin}")
+    private String adminPassword;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
@@ -85,8 +91,8 @@ public class WebSecurityConfig {
     public InMemoryUserDetailsManager userDetailsService() {
         PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
-        UserDetails user = User.withUsername("admin")
-                .password(encoder.encode("admin"))
+        UserDetails user = User.withUsername(adminUsername)
+                .password(encoder.encode(adminPassword))
                 .roles("ADMIN")
                 .build();
         return new InMemoryUserDetailsManager(user);
