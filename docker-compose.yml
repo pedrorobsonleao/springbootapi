@@ -79,7 +79,7 @@ services:
           --iteration-count 10 \
           --environment test-docker.postman_environment.json \
           simple_spring_boot_rest_api.postman_collection.json \
-          --reporters htmlextra;
+          --reporters cli,htmlextra;
     depends_on:
       - app
 
