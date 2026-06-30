@@ -43,9 +43,18 @@ services:
       - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_BASE_URL=http://app:8080
       - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_METADATA_USER_NAME=${SPRING_BOOT_ADMIN_USERNAME:-admin}
       - SPRING_BOOT_ADMIN_CLIENT_INSTANCE_METADATA_USER_PASSWORD=${SPRING_BOOT_ADMIN_PASSWORD:-admin}
+      - JAVA_OPTS=-javaagent:/app/opentelemetry-javaagent.jar
+      - OTEL_SERVICE_NAME=springbootapi
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=otlp
+      - OTEL_LOGS_EXPORTER=otlp
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - OTEL_EXPORTER_OTLP_PROTOCOL=grpc
     depends_on:
       mysql:
         condition: service_healthy
+      otel-collector:
+        condition: service_started
     restart: always
 
   # phpadmin - you need read database :)
@@ -82,6 +91,120 @@ services:
           --reporters cli,htmlextra;
     depends_on:
       - app
+
+  # MySQL/MariaDB metrics exporter
+  mysqld-exporter:
+    image: prom/mysqld-exporter:v0.15.0
+    container_name: mysqld_exporter
+    environment:
+      - MYSQLD_EXPORTER_PASSWORD=rootpwd
+    command:
+      - "--mysqld.address=mysql:3306"
+      - "--mysqld.username=root"
+    ports:
+      - "127.0.0.1:9104:9104"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: always
+
+  # OpenTelemetry Collector to receive app metrics/traces
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.95.0
+    container_name: otel_collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./monitoring/otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+      - "8889:8889" # Prometheus exporter metrics
+    depends_on:
+      - tempo
+    restart: always
+
+  # Prometheus TSDB for metrics storage
+  prometheus:
+    image: prom/prometheus:v2.50.0
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    ports:
+      - "127.0.0.1:${PROMETHEUS_PORT:-9095}:9090"
+    depends_on:
+      - otel-collector
+      - mysqld-exporter
+    restart: always
+
+  # Tempo for distributed tracing
+  tempo:
+    image: grafana/tempo:2.4.0
+    container_name: tempo
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./monitoring/tempo.yaml:/etc/tempo.yaml
+      - tempo-data:/var/tempo
+    ports:
+      - "3200:3200" # Tempo HTTP API
+    restart: always
+
+  # One-time initialization container to fetch Grafana dashboards
+  init-grafana:
+    image: alpine:3.20
+    container_name: init_grafana
+    volumes:
+      - grafana-dashboards:/var/lib/grafana/dashboards
+    command: >
+      sh -c "
+        apk add --no-cache curl &&
+        mkdir -p /var/lib/grafana/dashboards &&
+        curl -sL https://grafana.com/api/dashboards/18812/revisions/4/download -o /var/lib/grafana/dashboards/jvm-otel-v2.json &&
+        curl -sL https://grafana.com/api/dashboards/11323/revisions/2/download -o /var/lib/grafana/dashboards/mysql-exporter-v2.json &&
+        sed -i 's/$$\{DS_PROMETHEUS\}/Prometheus/g' /var/lib/grafana/dashboards/jvm-otel-v2.json &&
+        sed -i 's/$$\{DS_PROMETHEUS\}/Prometheus/g' /var/lib/grafana/dashboards/mysql-exporter-v2.json &&
+        sed -i 's/process_runtime_jvm_memory_usage_bytes/jvm_memory_used_bytes/g' /var/lib/grafana/dashboards/jvm-otel-v2.json &&
+        sed -i 's/process_runtime_jvm_memory_usage/jvm_memory_used_bytes/g' /var/lib/grafana/dashboards/jvm-otel-v2.json &&
+        sed -i 's/process_runtime_jvm_memory_limit_bytes/jvm_memory_limit_bytes/g' /var/lib/grafana/dashboards/jvm-otel-v2.json &&
+        sed -i 's/process_runtime_jvm_memory_limit/jvm_memory_limit_bytes/g' /var/lib/grafana/dashboards/jvm-otel-v2.json &&
+        sed -i 's/process_runtime_jvm_threads_count/jvm_thread_count/g' /var/lib/grafana/dashboards/jvm-otel-v2.json &&
+        sed -i 's/process_runtime_jvm_classes_current_loaded/jvm_class_count/g' /var/lib/grafana/dashboards/jvm-otel-v2.json && \
+        sed -i 's/process_runtime_jvm_system_cpu_utilization/jvm_cpu_recent_utilization/g' /var/lib/grafana/dashboards/jvm-otel-v2.json && \
+        sed -i 's/process_runtime_jvm_gc_duration/jvm_gc_duration/g' /var/lib/grafana/dashboards/jvm-otel-v2.json && \
+        sed -i 's/{__name__=~\"jvm_cpu_recent_utilization|jvm_cpu_recent_utilization_ratio|jvm_cpu_recent_utilization|jvm_cpu_recent_utilization_ratio|system_cpu_usage\", job=~\"$$job\", instance=~\"$$instance\"}/rate(process_cpu_seconds_total{job=~\"$$job\", instance=~\"$$instance\"}[$$__rate_interval])/g' /var/lib/grafana/dashboards/jvm-otel-v2.json
+        "
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+      - grafana-dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    depends_on:
+      init-grafana:
+        condition: service_completed_successfully
+      prometheus:
+        condition: service_started
+      tempo:
+        condition: service_started
+    restart: always
+
+volumes:
+  prometheus-data:
+  tempo-data:
+  grafana-data:
+  grafana-dashboards:
 
 secrets:
   db-password:

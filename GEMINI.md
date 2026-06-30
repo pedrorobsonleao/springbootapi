@@ -7,7 +7,7 @@ A modern, high-performance REST API built with **Java 25 (LTS)** and **Spring Bo
 - **Spring Boot 4:** Core framework for the API and monitoring.
 - **Security:** JWT-based authentication using **RSA signatures** (Private/Public keys in `src/main/resources/certs/`).
 - **Database:** **MariaDB** for production/development and **H2** for in-memory testing.
-- **Observability:** Integrated **Spring Boot Admin** for monitoring and **CycloneDX** for SBOM (Software Bill of Materials) generation.
+- **Observability:** Integrated **Spring Boot Admin** for administration, **CycloneDX** for SBOM generation, and a fully robust monitoring stack using **OpenTelemetry (OTel), Prometheus, Tempo, and Grafana** for complete application (JVM, traces) and database (MariaDB) observability.
 - **Testing:** **JaCoCo** for code coverage and **Newman (Postman)** for automated E2E tests.
 - **Deployment:** **Docker** with multi-stage builds and a minimal JRE via `jlink`.
 
@@ -29,6 +29,8 @@ A modern, high-performance REST API built with **Java 25 (LTS)** and **Spring Bo
 - **Swagger UI:** `http://localhost:8080/swagger-ui/index.html`
 - **Spring Boot Admin:** `http://localhost:8080/admin` (User/Pass: `admin`/`admin`)
 - **Health Check:** `http://localhost:8080/actuator/health`
+- **Grafana Dashboard:** `http://localhost:3000` (Pre-loaded with JVM OpenTelemetry & MySQL Exporter Dashboards)
+- **Prometheus UI:** `http://localhost:9095`
 
 ## Architecture
 The project follows a simplified **Clean Architecture** with distinct layers:

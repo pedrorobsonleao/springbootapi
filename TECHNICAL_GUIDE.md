@@ -127,4 +127,62 @@ Para replicar este ambiente ou usar como base para novos projetos, atente-se aos
 *   **SBOM:** A integração do CycloneDX com o Spring Boot Admin é uma funcionalidade avançada de segurança que garante visibilidade total da cadeia de suprimentos de software.
 
 ---
+
+## 5. Pilha de Monitoramento de Alta Robustez (OpenTelemetry + Prometheus + Tempo + Grafana)
+
+Para deixar o projeto com um nível de monitoração profissional e extremamente robusto, integramos uma solução completa de observabilidade com o ecossistema OpenTelemetry e Grafana.
+
+### Arquitetura de Observabilidade
+
+```mermaid
+graph TD
+    subgraph App_Layer [Aplicação & Banco]
+        JavaApp[Aplicação Spring Boot + OTel Java Agent]
+        DB[(MariaDB Database)]
+    end
+
+    subgraph Exporters [Coleta e Exportação]
+        MySQLExp[Prometheus MySQL Exporter]
+        OTelColl[OpenTelemetry Collector]
+    end
+
+    subgraph Storage [Armazenamento]
+        Prometheus[(Prometheus TSDB)]
+        Tempo[(Grafana Tempo)]
+    end
+
+    subgraph Visualization [Visualização]
+        Grafana[Grafana Dashboard]
+    end
+
+    %% Conexões
+    JavaApp -->|OTLP Traces & Metrics| OTelColl
+    DB -->|MariaDB Metrics| MySQLExp
+    
+    OTelColl -->|Metrics Pull| Prometheus
+    OTelColl -->|Push Traces| Tempo
+    MySQLExp -->|Metrics Pull| Prometheus
+    
+    Prometheus -->|Query Metrics| Grafana
+    Tempo -->|Query Traces| Grafana
+```
+
+### Componentes da Solução
+
+1. **OpenTelemetry Java Agent (`v2.29.0`):** Injetado dinamicamente no runtime do container Alpine. O agente coleta automaticamente métricas da JVM (threads, garbage collection, heap), RED metrics das requisições HTTP (Rate, Errors, Duration) e traces distribuídos detalhados do JDBC e Hibernate, sem alterar sequer uma linha do código Java.
+2. **Prometheus MySQL Exporter (`mysqld-exporter`):** Um serviço focado na saúde do banco de dados que expõe métricas de conexões ativas, InnoDB buffer pools, queries executadas e tráfego do MariaDB.
+3. **OpenTelemetry Collector (`otel-collector`):** O centralizador de telemetria. Recebe traces e métricas da aplicação via gRPC (porta `4317`), roteia as métricas para o Prometheus e envia os traces de forma assíncrona para o Tempo.
+4. **Prometheus TSDB:** Banco de dados de séries temporais que scrapea os dados coletados pelo `otel-collector` e pelo `mysqld-exporter` a cada 5 segundos.
+5. **Grafana & Tempo:**
+   * **Tempo:** Solução moderna e de alta escala para armazenamento de traces de chamadas (Distributed Tracing).
+   * **Grafana:** Painel de controle integrado com provisionamento automático de dados e dois dashboards pré-instalados na inicialização (através do container `init-grafana` que busca as configurações mais atualizadas da Grafana Labs):
+     * **JVM OpenTelemetry Dashboard (ID: 18812):** Painel interativo para verificar uso de CPU, classes, memória, latências e concorrência das Virtual Threads.
+     * **MySQL Exporter Dashboard (ID: 11323):** Painel profundo com todas as principais variáveis e performance de queries do MariaDB.
+
+### Endpoints da Pilha de Monitoração
+*   **Grafana Dashboard:** `http://localhost:3000` (Acesso anônimo automático configurado como Administrador para facilidade de uso)
+*   **Prometheus UI:** `http://localhost:9095`
+*   **MySQL Exporter Metrics:** `http://localhost:9104/metrics`
+
+---
 *Este documento é parte da iniciativa de tornar o código uma referência de excelência técnica.*

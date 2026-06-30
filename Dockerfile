@@ -26,10 +26,10 @@ RUN ./mvnw clean package -DskipTests
 # 4. Runtime stage: final lightweight application image
 FROM alpine:3.20 AS runtime
 
-# Upgrade OS packages to apply security patches and install CA certificates
+# Upgrade OS packages to apply security patches and install CA certificates and curl for OpenTelemetry agent download
 RUN apk update && \
     apk upgrade && \
-    apk add --no-cache ca-certificates
+    apk add --no-cache ca-certificates curl
 
 # maintainer name
 LABEL authors="Pedro Robson Leão <pedro.leao@gmail.com>"
@@ -52,6 +52,10 @@ RUN addgroup --gid ${GROUP_ID} ${GROUP_NAME} && \
     adduser --no-create-home --uid ${USER_ID} --ingroup ${GROUP_NAME} --disabled-password ${USER_NAME} && \
     mkdir ${APP_DIR} && \
     chown -R ${USER_NAME}:${GROUP_NAME} ${APP_DIR}
+
+# Download OpenTelemetry Java Agent
+RUN curl -L https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v2.29.0/opentelemetry-javaagent.jar -o ${APP_DIR}/opentelemetry-javaagent.jar && \
+    chown ${USER_NAME}:${GROUP_NAME} ${APP_DIR}/opentelemetry-javaagent.jar
 
 # Copy entrypoint script and make it executable
 COPY --chown=${USER_NAME}:${GROUP_NAME} docker-entrypoint.sh ${APP_DIR}/entrypoint.sh
