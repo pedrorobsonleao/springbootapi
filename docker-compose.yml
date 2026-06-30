@@ -174,7 +174,13 @@ services:
         sed -i 's/process_runtime_jvm_classes_current_loaded/jvm_class_count/g' /var/lib/grafana/dashboards/jvm-otel-v2.json && \
         sed -i 's/process_runtime_jvm_system_cpu_utilization/jvm_cpu_recent_utilization/g' /var/lib/grafana/dashboards/jvm-otel-v2.json && \
         sed -i 's/process_runtime_jvm_gc_duration/jvm_gc_duration/g' /var/lib/grafana/dashboards/jvm-otel-v2.json && \
-        sed -i 's/{__name__=~\"jvm_cpu_recent_utilization|jvm_cpu_recent_utilization_ratio|jvm_cpu_recent_utilization|jvm_cpu_recent_utilization_ratio|system_cpu_usage\", job=~\"$$job\", instance=~\"$$instance\"}/rate(process_cpu_seconds_total{job=~\"$$job\", instance=~\"$$instance\"}[$$__rate_interval])/g' /var/lib/grafana/dashboards/jvm-otel-v2.json
+        sed -i 's/{__name__=~\"jvm_cpu_recent_utilization|jvm_cpu_recent_utilization_ratio|jvm_cpu_recent_utilization|jvm_cpu_recent_utilization_ratio|system_cpu_usage\", job=~\"$$job\", instance=~\"$$instance\"}/rate(process_cpu_seconds_total{job=~\"$$job\", instance=~\"$$instance\"}[$$__rate_interval])/g' /var/lib/grafana/dashboards/jvm-otel-v2.json && \
+        sed -i 's/{__name__=~\"http_server_request_duration_seconds_count|http_server_request_duration_count|http_server_duration_seconds_count|http_server_duration_count|http_server_duration_milliseconds_count|http_server_requests_milliseconds_count|http_server_requests_count|http_server_requests_seconds_count\",/http_server_request_duration_seconds_count{/g' /var/lib/grafana/dashboards/jvm-otel-v2.json && \
+        sed -i 's/{__name__=~\"http_server_request_duration_seconds_count|http_server_request_duration_count\",/http_server_request_duration_seconds_count{/g' /var/lib/grafana/dashboards/jvm-otel-v2.json && \
+        sed -i 's/{__name__=~\"http_server_request_duration_seconds_bucket|http_server_request_duration_bucket|http_server_duration_seconds_bucket|http_server_duration_bucket|http_server_requests_seconds_bucket\",/http_server_request_duration_seconds_bucket{/g' /var/lib/grafana/dashboards/jvm-otel-v2.json && \
+        sed -i 's/{__name__=~\"http_server_duration_milliseconds_bucket|http_server_requests_milliseconds_bucket|http_server_requests_bucket\",/http_server_request_duration_seconds_bucket{/g' /var/lib/grafana/dashboards/jvm-otel-v2.json && \
+        sed -i 's/{__name__=~\"http_server_duration_milliseconds_count|http_server_duration_seconds_count|http_server_duration_count\",/http_server_request_duration_seconds_count{/g' /var/lib/grafana/dashboards/jvm-otel-v2.json && \
+        sed -i 's/{__name__=~\"http_server_requests_milliseconds_count|http_server_requests_count|http_server_requests_seconds_count\",/http_server_request_duration_seconds_count{/g' /var/lib/grafana/dashboards/jvm-otel-v2.json
         "
 
   # Grafana for visualization
