@@ -32,6 +32,10 @@ O projeto passou por uma modernização significativa, focando em performance, o
 *   **O que mudou:** Configuração do `cyclonedx-maven-plugin`.
 *   **Impacto:** Geração automática do **SBOM (Software Bill of Materials)**, permitindo auditoria de segurança das dependências diretamente no painel do Spring Boot Admin.
 
+### [5a2f6eb] - Otimização de Atuadores e Ajustes de Carga do JMeter
+*   **O que mudou:** Separação dos atuadores públicos em uma `SecurityFilterChain` dedicada e totalmente stateless (`@Order(1)`), liberação pública da rota `/error` no `WebSecurityConfig` (`@Order(3)`) para evitar o mascaramento de status HTTP reais (como 406 Not Acceptable) com o código 401 Unauthorized de segurança, e adição de cabeçalho `Accept: */*` na requisição do SBOM no teste do JMeter para resolver a incompatibilidade de Content Negotiation.
+*   **Impacto:** Resolução completa dos gargalos de negociação de tipos e criação de sessões, **zerando os erros sob carga (0.00% de taxa de erro com 6.179 requisições)** e confirmando a ultra-alta performance das Virtual Threads do Java 25.
+
 ---
 
 ## 2. Arquitetura do Sistema
