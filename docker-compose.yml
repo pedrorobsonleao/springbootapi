@@ -83,6 +83,36 @@ services:
     depends_on:
       - app
 
+  jmeter:
+    image: justb4/jmeter:5.5
+    container_name: jmeter_tests
+    volumes:
+      - ./jmeter:/jmeter
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        sleep 5;
+        echo "Starting JMeter load test..."
+        rm -rf /jmeter/reports /jmeter/results.jtl
+        mkdir -p /jmeter/reports
+        jmeter -n \
+          -t /jmeter/springbootapi.jmx \
+          -l /jmeter/results.jtl \
+          -j /jmeter/jmeter.log \
+          -e -o /jmeter/reports \
+          -Jserver=app \
+          -Jport=8080 \
+          -Jprotocol=http \
+          -Jthreads=10 \
+          -Jrampup=2 \
+          -Jduration=30;
+        echo "JMeter load test complete. HTML report generated in jmeter/reports/"
+    depends_on:
+      newman:
+        condition: service_completed_successfully
+
 secrets:
   db-password:
     file: ${DB_ROOT_PASSWORD_FILE_PATH:-db/pwd.txt}
+

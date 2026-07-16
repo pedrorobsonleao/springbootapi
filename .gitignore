@@ -38,3 +38,9 @@ build/
 
 # Environment variables
 .env
+
+### jmeter  tests
+jmeter/reports/
+jmeter/*.jtl
+jmeter/*.log
+
