@@ -1,3 +1,20 @@
+server:
+  port: ${PORT:8080}
+  servlet:
+    context-path: /
+
+application:
+  title: ${spring.application.name:springbootapi}
+  version: 0.0.1-SNAPSHOT
+
+swagger:
+  enabled: true
+  url: http://localhost:${server.port:8080}/swagger-ui/index.html
+
+Swagger:
+  enabled: true
+  url: http://localhost:${server.port:8080}/swagger-ui/index.html
+
 spring:
   application:
     name: "springbootapi"
