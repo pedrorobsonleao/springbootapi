@@ -9,6 +9,7 @@ Este projeto é uma **API REST moderna e de alto desempenho**, escrita em **Java
 * [Como Desenvolver (Local)](#como-desenvolver-local)
 * [Testes de Cobertura (JaCoCo)](#testes-de-cobertura-jacoco)
 * [Swagger & Automação de Requests](#swagger--automação-de-requests)
+* [Teste de Carga (JMeter)](#teste-de-carga-jmeter)
 * [Equipe](#equipe)
 
 ---
@@ -138,6 +139,54 @@ Para rodar os fluxos automáticos da coleção com o Newman no Docker e validar 
 docker-compose run --rm newman
 ```
 Os relatórios finais da execução de ponta-a-ponta ficarão registrados na pasta `newman/tests/newman/`.
+
+---
+
+## Teste de Carga (JMeter)
+
+O projeto inclui uma suíte de testes de carga automatizada desenvolvida no **Apache JMeter 5.5**, localizada em `jmeter/springbootapi.jmx`. Este teste foi projetado para avaliar a performance e resiliência da API sob concorrência e alto fluxo de requisições, tirando proveito máximo das **Virtual Threads do Java 25**.
+
+### Cenários de Teste Cobertos
+O plano de teste simula o ciclo de vida completo de uso da API por múltiplos usuários virtuais simultâneos:
+1. **Autenticação:** Login com sucesso (POST `/login`) para obtenção do token JWT e tentativa de login inválido (POST `/login` - Falha) validando a resposta 401 Unauthorized.
+2. **Observabilidade:** Acesso contínuo aos endpoints do Spring Actuator (`GET /actuator/health`, `GET /actuator/sbom` e `GET /actuator/sbom/application`).
+3. **Fluxo Completo de CRUD (Pessoa) com validações:** 
+   - Criação de entidade válida (POST `/pessoa`) extraindo dinamicamente o ID e Nome gerados para uso nas requisições seguintes.
+   - Tentativa de criação com dados inválidos (Nome Curto e Longo) validando resposta de erro 400 Bad Request.
+   - Busca detalhada de entidade recém-criada (GET `/pessoa/:id`) e busca por ID inexistente (GET `/pessoa/999999` esperando 404 Not Found).
+   - Atualização completa de entidade (PUT `/pessoa/:id`) e validações de erro para atualizações inválidas (Nome Curto e Longo).
+   - Listagem geral (GET `/pessoa`) com validações de payload.
+   - Exclusão lógica da entidade criada (DELETE `/pessoa/:id`) e exclusão de ID inexistente (DELETE `/pessoa/999999` esperando 404 Not Found).
+4. **Segurança de Acesso:** Acesso não autenticado (GET `/pessoa` - Sem Auth) para validar a correta rejeição com status 401 Unauthorized ou 403 Forbidden.
+
+### Como Executar os Testes de Carga
+
+Os testes de carga rodam de forma totalmente conteinerizada via Docker Compose, utilizando a imagem oficial `justb4/jmeter:5.5`. O serviço está configurado para iniciar automaticamente de forma encadeada após o sucesso dos testes do Newman (E2E).
+
+Para iniciar todo o pipeline de testes (App -> DB -> Newman -> JMeter):
+```sh
+docker-compose up --build
+```
+
+Caso queira rodar **apenas** o serviço do JMeter de forma isolada (certificando-se de que a aplicação `app` está em execução):
+```sh
+docker-compose run --rm jmeter
+```
+
+### Customização dos Parâmetros de Carga
+Você pode customizar o comportamento do teste passando variáveis de ambiente na execução ou alterando as definições diretamente nos parâmetros passados para o JMeter no arquivo `docker-compose.yml`. Por padrão, estão configurados:
+- `threads`: Quantidade de usuários virtuais concorrentes (Padrão: `10` via `-Jthreads=10`).
+- `rampup`: Tempo de rampa em segundos para subir todas as threads (Padrão: `2` via `-Jrampup=2`).
+- `duration`: Tempo total de duração do teste em segundos (Padrão: `30` via `-Jduration=30`).
+- `server`: Host do servidor alvo (Padrão: `app` via `-Jserver=app`).
+- `port`: Porta do servidor alvo (Padrão: `8080` via `-Jport=8080`).
+
+### Resultados e Relatórios Analíticos
+Após o término da execução, o JMeter gera um relatório estático interativo rico em gráficos e métricas de latência (tempo de resposta), vazão (Throughput) e taxas de erro.
+
+- **Logs Brutos e Resultados:** Gravados localmente na pasta `jmeter/` como `results.jtl` e `jmeter.log` (arquivos ignorados pelo Git).
+- **Relatório Web (Dashboard HTML):** Gerado na pasta `jmeter/reports/index.html`. 
+  - *Dica:* Abra o arquivo `jmeter/reports/index.html` em qualquer navegador para interagir com os gráficos detalhados de desempenho (Over Time, Latencies, Throughput, Hits Per Second, Response Codes, etc.).
 
 ---
 

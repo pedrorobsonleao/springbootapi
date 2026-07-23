@@ -23,6 +23,7 @@ A modern, high-performance REST API built with **Java 25 (LTS)** and **Spring Bo
 - **Run (Docker):** `docker-compose up --build`
 - **Test & Coverage:** `./mvnw clean test jacoco:report` (Report at `target/site/jacoco/index.html`)
 - **E2E Tests (Newman/Docker):** `docker-compose run --rm newman`
+- **Load Tests (JMeter/Docker):** `docker-compose run --rm jmeter` (Generates interactive HTML report in `jmeter/reports/index.html`)
 
 ### Endpoints
 - **API Base:** `http://localhost:8080`
@@ -45,4 +46,4 @@ The project follows a simplified **Clean Architecture** with distinct layers:
 - **Security:** JWT tokens are signed using RSA. Ensure keys are present in `src/main/resources/certs/`.
 - **Documentation:** Use **Javadoc in Markdown** (`///`) for clear code documentation.
 - **SBOM:** Automatically generated during build for security auditing.
-- **Testing:** New features MUST include unit tests and, where applicable, be added to the Newman collection in `newman/tests/`.
+- **Testing:** New features MUST include unit tests and, where applicable, be added to the Newman collection in `newman/tests/`. For performance-critical updates, verify compatibility with the JMeter load test suite in `jmeter/springbootapi.jmx` using `docker-compose run --rm jmeter`.
