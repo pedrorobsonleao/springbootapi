@@ -1,10 +1,10 @@
 # Project Overview: Springboot API 🚀
 
-A modern, high-performance REST API built with **Java 25 (LTS)** and **Spring Boot 4**. This project demonstrates best practices in back-end development, including JWT authentication, comprehensive testing, and containerized deployment.
+A modern, high-performance REST API built with **Java 25 (LTS)** and **Spring Boot 4.1.0**. This project demonstrates best practices in back-end development, including JWT authentication, comprehensive testing, and containerized deployment.
 
 ## Key Technologies
 - **Java 25:** Leverages modern features like **Virtual Threads** (Project Loom) for high throughput and **Sequenced Collections** for predictable iteration order.
-- **Spring Boot 4:** Core framework for the API and monitoring.
+- **Spring Boot 4.1.0:** Core framework for the API and monitoring.
 - **Security:** JWT-based authentication using **RSA signatures** (Private/Public keys in `src/main/resources/certs/`).
 - **Database:** **MariaDB** for production/development and **H2** for in-memory testing.
 - **Observability:** Integrated **Spring Boot Admin** for monitoring and **CycloneDX** for SBOM (Software Bill of Materials) generation.

@@ -1,6 +1,6 @@
 # Springboot API 🚀
 
-Este projeto é uma **API REST moderna e de alto desempenho**, escrita em **Java 25 (LTS)** utilizando o ecossistema **Spring Boot 4**. O objetivo desta API é demonstrar as melhores práticas em desenvolvimento back-end, incluindo autenticação baseada em JWT, testes robustos automatizados com relatórios de cobertura (JaCoCo) e deployment simplificado em contêineres Docker usando Multi-stage builds.
+Este projeto é uma **API REST moderna e de alto desempenho**, escrita em **Java 25 (LTS)** utilizando o ecossistema **Spring Boot 4.1.0**. O objetivo desta API é demonstrar as melhores práticas em desenvolvimento back-end, incluindo autenticação baseada em JWT, testes robustos automatizados com relatórios de cobertura (JaCoCo) e deployment simplificado em contêineres Docker usando Multi-stage builds.
 
 ## Índice
 * [Sobre o Projeto](#sobre-o-projeto)
@@ -18,7 +18,7 @@ Este projeto é uma **API REST moderna e de alto desempenho**, escrita em **Java
 A API gerencia informações de `Pessoa` através de um CRUD seguro. 
 
 **Características Principais:**
-- **Tecnologia Ponta:** Java 25 (Virtual Threads ativas + `SequencedCollections`) e Spring Boot 4.
+- **Tecnologia Ponta:** Java 25 (Virtual Threads ativas + `SequencedCollections`) e Spring Boot 4.1.0.
 - **Segurança (JWT):** Geração e validação de tokens JWT (RSA assinados) via `AuthController` e `TokenAuthenticationService`.
 - **Validação e Banco de Dados:** JPA / Hibernate para banco de dados, com validação de entidade estrita provida pelo `hibernate-validator` (Jakarta EE), garantindo integridade dos dados com anotações como `@NotBlank` e `@Size`.
 - **Testes Abrangentes:** Testes unitários focados na confiabilidade de todos os endpoints (`PessoaControllerTest`, `AuthControllerTest`), cobrindo desde o caminho feliz até cenários de falha (credenciais incorretas, validação de payload).

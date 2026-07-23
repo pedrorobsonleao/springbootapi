@@ -8,6 +8,14 @@ Este documento serve como uma referência técnica detalhada sobre a evolução 
 
 O projeto passou por uma modernização significativa, focando em performance, observabilidade e robustez.
 
+### [fa181be] a [d8be892] - Atualização de Dependências para LTS/Estáveis (Julho de 2026)
+*   **O que mudou:** Atualização geral de todos os artefatos para suas versões mais recentes.
+*   **Destaques Técnicos:**
+    *   **Spring Boot 4.1.0:** Atualização do framework core, trazendo melhorias de performance e compatibilidade nativa com Java 25.
+    *   **Maven 3.9.16:** Upgrade do Maven Wrapper para resolver avisos de depreciação terminal relacionados à biblioteca `sun.misc.Unsafe` (utilizada pelo Guava).
+    *   **CycloneDX 1.5:** Ajuste da versão do esquema do SBOM para 1.5 para resolver avisos de validação de esquemas JSON no plugin CycloneDX.
+    *   **Ecossistema Atualizado:** Atualização do Hibernate (7.4.1.Final), MySQL Connector (9.7.0), e bibliotecas de segurança (JJWT 0.13.0).
+
 ### [a96d7ca] e [2890fac] - Modernização para Java 25
 *   **O que mudou:** Atualização do JDK para a versão 25 (LTS).
 *   **Inovações Técnicas:**
