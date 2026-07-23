@@ -178,6 +178,7 @@
 							<outputDirectory>${project.build.outputDirectory}/META-INF/sbom</outputDirectory>
 							<outputFormat>json</outputFormat>
 							<outputName>application.cdx</outputName>
+							<schemaVersion>1.5</schemaVersion>
 						</configuration>
 					</execution>
 				</executions>
