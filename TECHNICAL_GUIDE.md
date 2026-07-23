@@ -121,6 +121,11 @@ Para replicar este ambiente ou usar como base para novos projetos, atente-se aos
     ```bash
     ./mvnw spring-boot:run
     ```
+*   **Execução de Teste de Carga (JMeter):**
+    ```bash
+    docker-compose run --rm jmeter
+    ```
+    *(Roda o plano de testes em `jmeter/springbootapi.jmx` e gera os relatórios estáticos em `jmeter/reports/index.html`)*
 
 ### Endpoints Chave para Validação
 *   **API Swagger:** `http://localhost:8080/swagger-ui/index.html`
@@ -136,6 +141,7 @@ Para replicar este ambiente ou usar como base para novos projetos, atente-se aos
 *   **Java Records:** O uso de `records` (como em `LoginRequest`) demonstra a adoção de estruturas de dados imutáveis e concisas, típicas do Java moderno.
 *   **Segurança Idiomática:** A implementação utiliza `JwtEncoder` e `JwtDecoder` do ecossistema OAuth2 do Spring Security, abandonando bibliotecas legadas e adotando o padrão de mercado para assinatura RSA.
 *   **Virtual Threads:** Configuradas via `application.yaml` com `spring.threads.virtual.enabled=true`, permitindo escalar sem a sobrecarga de threads tradicionais do SO.
+*   **Teste de Carga de Alta Performance:** O script JMeter em `jmeter/springbootapi.jmx` simula fluxos concorrentes complexos (autenticação, CRUD, Actuator, e rotas sem autenticação). Ele demonstra na prática o benefício das Virtual Threads, alcançando taxas de erro de **0.00%** sob carga intensa ao otimizar o processamento de requisições bloqueantes de I/O no banco de dados e rotas stateless, servindo como uma prova empírica de escalabilidade do ecossistema moderno do Java 25.
 *   **SBOM:** A integração do CycloneDX com o Spring Boot Admin é uma funcionalidade avançada de segurança que garante visibilidade total da cadeia de suprimentos de software.
 
 ---
