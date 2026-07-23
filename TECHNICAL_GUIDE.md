@@ -44,6 +44,12 @@ O projeto passou por uma modernização significativa, focando em performance, o
 *   **O que mudou:** Separação dos atuadores públicos em uma `SecurityFilterChain` dedicada e totalmente stateless (`@Order(1)`), liberação pública da rota `/error` no `WebSecurityConfig` (`@Order(3)`) para evitar o mascaramento de status HTTP reais (como 406 Not Acceptable) com o código 401 Unauthorized de segurança, e adição de cabeçalho `Accept: */*` na requisição do SBOM no teste do JMeter para resolver a incompatibilidade de Content Negotiation.
 *   **Impacto:** Resolução completa dos gargalos de negociação de tipos e criação de sessões, **zerando os erros sob carga (0.00% de taxa de erro com 6.179 requisições)** e confirmando a ultra-alta performance das Virtual Threads do Java 25.
 
+### [Fix] - Resolução da Falha de Login no Spring Boot Admin (SBA)
+*   **O que mudou:** Correção da falha de login na interface administrativa através de duas ações:
+    1. **Upgrade de Versão:** Atualização das dependências do `spring-boot-admin-starter-server` e `spring-boot-admin-starter-client` de `4.1.0` para `4.1.1` para resolver o bug upstream onde o botão de login era renderizado incorretamente com `type="button"` ao invés de `type="submit"` (GitHub Issue #5438).
+    2. **Liberação do Dispatcher ASYNC:** Inclusão de `.dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()` na configuração de segurança administrativa (`AdminSecurityConfig`) para autorizar chamadas assíncronas do ecossistema do Spring Boot Admin / Vue.js sob o Spring Security 6.
+*   **Impacto:** Restabelecimento do acesso completo à interface administrativa do Spring Boot Admin, garantindo que os usuários consigam realizar o login de forma consistente sem redirecionamentos infinitos ou falhas de submissão do formulário. Adição do teste de integração `AdminLoginSecurityTest` para cobertura e prevenção de regressões.
+
 ---
 
 ## 2. Arquitetura do Sistema

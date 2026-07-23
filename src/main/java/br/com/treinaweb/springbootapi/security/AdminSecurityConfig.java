@@ -1,6 +1,7 @@
 package br.com.treinaweb.springbootapi.security;
 
 import de.codecentric.boot.admin.server.config.AdminServerProperties;
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -47,6 +48,7 @@ public class AdminSecurityConfig {
                 .requestMatchers(this.adminServer.path("/login")).permitAll()
                 .requestMatchers(this.adminServer.path("/instances/**")).permitAll()
                 .requestMatchers("/actuator/health", "/actuator/info", "/actuator/sbom", "/actuator/sbom/**").permitAll()
+                .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
                 .requestMatchers("/actuator/**").authenticated()
                 .anyRequest().authenticated()
             )
