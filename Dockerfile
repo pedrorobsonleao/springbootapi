@@ -15,7 +15,7 @@ FROM base AS builder
 # Fixed --compress to use 'zip-6' (JDK 21+)
 RUN jlink \
     --verbose \
-    --add-modules java.base,java.compiler,java.instrument,java.management,java.naming,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,jdk.unsupported,jdk.crypto.ec,jdk.management.agent,java.desktop \
+    --add-modules java.base,java.compiler,java.instrument,java.management,java.naming,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,jdk.unsupported,jdk.crypto.ec,jdk.management.agent,java.desktop,jdk.net \
     --compress zip-6 \
     --no-header-files \
     --no-man-pages \

@@ -14,7 +14,7 @@ O projeto passou por uma modernização significativa, focando em performance, o
     *   **Spring Boot 4.1.0:** Atualização do framework core, trazendo melhorias de performance e compatibilidade nativa com Java 25.
     *   **Maven 3.9.16:** Upgrade do Maven Wrapper para resolver avisos de depreciação terminal relacionados à biblioteca `sun.misc.Unsafe` (utilizada pelo Guava).
     *   **CycloneDX 1.5:** Ajuste da versão do esquema do SBOM para 1.5 para resolver avisos de validação de esquemas JSON no plugin CycloneDX.
-    *   **Ecossistema Atualizado:** Atualização do Hibernate (7.4.1.Final), MySQL Connector (9.7.0), e bibliotecas de segurança (JJWT 0.13.0).
+    *   **Ecossistema Atualizado:** Atualização do Hibernate (7.4.1.Final), MariaDB Connector/J (3.5.1), e bibliotecas de segurança (JJWT 0.13.0).
 
 ### [a96d7ca] e [2890fac] - Modernização para Java 25
 *   **O que mudou:** Atualização do JDK para a versão 25 (LTS).

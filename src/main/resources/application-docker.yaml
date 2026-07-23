@@ -15,7 +15,7 @@ spring:
             user.name: ${SPRING_BOOT_ADMIN_CLIENT_INSTANCE_METADATA_USER_NAME:admin}
             user.password: ${SPRING_BOOT_ADMIN_CLIENT_INSTANCE_METADATA_USER_PASSWORD:admin}
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://mysql:3306/treinaweb?useSSL=false}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mariadb://mysql:3306/treinaweb?useSSL=false}
     username: ${SPRING_DATASOURCE_USERNAME:treinawebusr}
     password: ${SPRING_DATASOURCE_PASSWORD:treinawebpwd}
     hikari:

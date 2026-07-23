@@ -34,7 +34,7 @@ services:
       - "${APP_PORT:-8080}:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/${DB_DATABASE:-treinaweb}?useSSL=false
+      - SPRING_DATASOURCE_URL=jdbc:mariadb://mysql:3306/${DB_DATABASE:-treinaweb}?useSSL=false
       - SPRING_DATASOURCE_USERNAME=${DB_USER:-treinawebusr}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD:-treinawebpwd}
       - SPRING_BOOT_ADMIN_CLIENT_URL=http://app:8080/admin
@@ -101,12 +101,12 @@ services:
           -l /jmeter/results.jtl \
           -j /jmeter/jmeter.log \
           -e -o /jmeter/reports \
-          -Jserver=app \
-          -Jport=8080 \
-          -Jprotocol=http \
-          -Jthreads=10 \
-          -Jrampup=2 \
-          -Jduration=30;
+          -Jserver=${JMETER_SERVER:-app} \
+          -Jport=${JMETER_PORT:-8080} \
+          -Jprotocol=${JMETER_PROTOCOL:-http} \
+          -Jthreads=${JMETER_THREADS:-10} \
+          -Jrampup=${JMETER_RAMPUP:-2} \
+          -Jduration=${JMETER_DURATION:-30};
         echo "JMeter load test complete. HTML report generated in jmeter/reports/"
     depends_on:
       newman:
